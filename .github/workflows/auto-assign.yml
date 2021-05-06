@@ -7,12 +7,11 @@ jobs:
         with:
           script: |
             console.log(context)
-            console.log(github)
-            console.log(github.pulls)
+            console.log(context.payload)
             await github.pulls.requestReviewers({
               owner: "gravitational",
               repo: "teleport",
-              pull_number: context.pull_request.number,
+              pull_number: context.payload.pull_request.number,
               reviewers: [
                 "r0mant"
               ]
