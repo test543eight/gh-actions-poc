@@ -7,7 +7,7 @@ jobs:
         with:
           script: |
             console.log(context)
-            github.rest.pulls.requestReviewers({
+            github.pulls.requestReviewers({
               owner: "gravitational",
               repo: "teleport",
               pull_number: context.pull_request.number,
