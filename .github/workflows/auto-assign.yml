@@ -1,4 +1,4 @@
-on: pull_request_target
+on: pull_request
 
 jobs:
   welcome:
@@ -12,7 +12,7 @@ jobs:
             console.log(context.payload)
             github.pulls.requestReviewers({
               owner: "gravitational",
-              repo: "teleport",
+              repo: "gh-actions-poc",
               pull_number: context.payload.pull_request.number,
               reviewers: [
                 "r0mant"
