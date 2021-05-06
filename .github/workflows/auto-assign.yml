@@ -1,4 +1,5 @@
-on: pull_request
+on: pull_request_target
+
 jobs:
   welcome:
     runs-on: ubuntu-latest
@@ -9,7 +10,7 @@ jobs:
           script: |
             console.log(context)
             console.log(context.payload)
-            await github.pulls.requestReviewers({
+            github.pulls.requestReviewers({
               owner: "gravitational",
               repo: "teleport",
               pull_number: context.payload.pull_request.number,
