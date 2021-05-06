@@ -7,3 +7,11 @@ jobs:
         with:
           script: |
             console.log(context)
+            octokit.rest.pulls.requestReviewers({
+              owner: "gravitational",
+              repo: "teleport",
+              pull_number: context.pull_request.number,
+              reviewers: [
+                "r0mant"
+              ]
+            });
