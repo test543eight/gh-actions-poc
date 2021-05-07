@@ -9,8 +9,7 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             console.log(context)
-
-            if context.eventName == "issue_comment" {
+            if (context.eventName == "issue_comment") {
                 core.setFailed('Action failed')
             } else {
                 github.pulls.requestReviewers({
