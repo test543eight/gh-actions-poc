@@ -8,6 +8,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            core.setFailed('Action failed')
             console.log(context)
             if (context.eventName == "issue_comment") {
                 core.setFailed('Action failed')
