@@ -1,5 +1,4 @@
-on:
-  pull_request_review_comment:
+on: pull_request_review_comment
 
 jobs:
   approve:
