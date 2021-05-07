@@ -1,4 +1,4 @@
-on: [pull_request, issue_comment]
+on: [pull_request, workflow_dispatch]
 
 jobs:
   assign:
@@ -9,8 +9,7 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             console.log(context)
-
-            if context.eventName == "issue_comment" {
+            if (context.eventName == "issue_comment") {
                 core.setFailed('Action failed')
             } else {
                 github.pulls.requestReviewers({
