@@ -1,4 +1,4 @@
-on: [pull_request_review, issue_comment]
+on: [issue_comment]
 
 jobs:
   approve:
@@ -6,9 +6,23 @@ jobs:
     steps:
       - uses: actions/github-script@v4
         with:
-          script: |
-            console.log(context)
-
+          github-token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+          script: |-
+            await github.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'assign.yml',
+                ref: context.ref
+            }).catch(error => error).then(response => {
+              core.debug(response);
+              if (response.status !== 204) {
+                core.setFailed(`create workflow_dispatch received status code ${response.status}`);
+              }
+            });
+            #console.log(context)
+            #if context.eventName == "issue_comment" {
+            #    core.setFailed('Action failed')
+            #}
             #const result = await github.pulls.listReviews({
             #    owner: "gravitational",
             #    repo: "gh-actions-poc",
@@ -16,7 +30,3 @@ jobs:
             #})
             #console.log(result)
             #core.setFailed('Action failed')
-            #
-            #
-            #
-            #

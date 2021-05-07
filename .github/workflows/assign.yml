@@ -8,16 +8,20 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            console.log(context)
-            if (context.eventName == "issue_comment") {
+            var random_boolean = Math.random() < 0.5;
+            if (random_boolean) {
                 core.setFailed('Action failed')
-            } else {
-                github.pulls.requestReviewers({
-                  owner: "gravitational",
-                  repo: "gh-actions-poc",
-                  pull_number: context.payload.pull_request.number,
-                  reviewers: [
-                    "r0mant"
-                  ]
-                })
             }
+            #console.log(context)
+            #if (context.eventName == "issue_comment") {
+            #    core.setFailed('Action failed')
+            #} else {
+            #    github.pulls.requestReviewers({
+            #      owner: "gravitational",
+            #      repo: "gh-actions-poc",
+            #      pull_number: context.payload.pull_request.number,
+            #      reviewers: [
+            #        "r0mant"
+            #      ]
+            #    })
+            #}
