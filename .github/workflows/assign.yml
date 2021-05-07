@@ -1,4 +1,4 @@
-on: [pull_request, issue_comment]
+on: [pull_request, workflow_dispatch]
 
 jobs:
   assign:
