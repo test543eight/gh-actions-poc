@@ -1,4 +1,4 @@
-on: pull_request_review
+on: [pull_request_review, issue_comment]
 
 jobs:
   approve:
@@ -8,6 +8,7 @@ jobs:
         with:
           script: |
             console.log(context)
+
             #const result = await github.pulls.listReviews({
             #    owner: "gravitational",
             #    repo: "gh-actions-poc",
@@ -15,3 +16,7 @@ jobs:
             #})
             #console.log(result)
             #core.setFailed('Action failed')
+            #
+            #
+            #
+            #
