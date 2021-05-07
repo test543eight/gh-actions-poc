@@ -9,12 +9,16 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             console.log(context)
-            console.log(context.payload)
-            github.pulls.requestReviewers({
-              owner: "gravitational",
-              repo: "gh-actions-poc",
-              pull_number: context.payload.pull_request.number,
-              reviewers: [
-                "r0mant"
-              ]
-            })
+
+            if context.eventName == "issue_comment" {
+                core.setFailed('Action failed')
+            } else {
+                github.pulls.requestReviewers({
+                  owner: "gravitational",
+                  repo: "gh-actions-poc",
+                  pull_number: context.payload.pull_request.number,
+                  reviewers: [
+                    "r0mant"
+                  ]
+                })
+            }
