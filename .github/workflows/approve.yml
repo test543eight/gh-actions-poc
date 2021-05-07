@@ -11,7 +11,7 @@ jobs:
             const result = await github.pulls.listReviews({
                 owner: "gravitational",
                 repo: "gh-actions-poc",
-                pull_number: context.payload.pull_request.number,
+                pull_number: context.payload.issue.number,
             })
             console.log(result)
             core.setFailed('Action failed')
