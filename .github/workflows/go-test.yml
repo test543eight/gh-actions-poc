@@ -8,7 +8,5 @@ jobs:
       - uses: actions/setup-go@v1
         with:
           go-version: '1.16.0'
-      - name: setupdeps
-        run: go get -u github.com/google/go-github/v35
-      - name: runhello
-        run: go run .github/workflows/hello.go
+      - run: go get -u github.com/google/go-github/v35
+      - run: go run .github/workflows/hello.go
