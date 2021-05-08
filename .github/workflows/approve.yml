@@ -11,7 +11,7 @@ jobs:
             await github.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                workflow_id: '25',
+                workflow_id: '29',
                 ref: context.ref
             })
 
