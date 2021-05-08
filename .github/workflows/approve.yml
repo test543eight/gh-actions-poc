@@ -8,12 +8,11 @@ jobs:
         with:
           github-token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
           script: |-
-            await github.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: '29',
-                ref: context.ref
-            })
+            octokit.rest.actions.reRunWorkflow({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: "822068640",
+            });
 
 #                workflow_id: 'assign.yml',
 #console.log(context)
