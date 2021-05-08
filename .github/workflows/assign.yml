@@ -9,7 +9,7 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             console.log(context)
-            core.setFailed('Action failed')
+            core.setFailed('Action failed 2')
 
 #var r = Math.floor(Math.random() * 2)
 #if (r == 0) {
