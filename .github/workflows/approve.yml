@@ -11,10 +11,11 @@ jobs:
             await github.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                workflow_id: 'assign.yml',
+                workflow_id: '25',
                 ref: context.ref
             })
 
+#                workflow_id: 'assign.yml',
 #console.log(context)
 #if context.eventName == "issue_comment" {
 #    core.setFailed('Action failed')
