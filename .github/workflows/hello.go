@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/google/go-github/v35/github"
 )
 
 func main() {
@@ -16,4 +18,7 @@ func main() {
 		fmt.Printf("--> %v.\n", err)
 	}
 	fmt.Printf("--> b= %v.\n", string(b))
+
+	client := github.NewClient(nil)
+	fmt.Printf("--> %v.\n", client)
 }
