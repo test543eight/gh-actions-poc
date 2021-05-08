@@ -8,7 +8,7 @@ jobs:
         with:
           github-token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
           script: |-
-            gmail.actions.reRunWorkflow({
+            github.actions.reRunWorkflow({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: "822068640",
