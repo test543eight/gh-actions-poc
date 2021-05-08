@@ -8,6 +8,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            console.log(context)
             core.setFailed('Action failed')
 
 #var r = Math.floor(Math.random() * 2)
