@@ -1,0 +1,11 @@
+on: [pull_request]
+
+jobs:
+  foo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "go-foo"
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.9.3'
+      - run: go run hello.go
