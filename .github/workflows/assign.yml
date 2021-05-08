@@ -8,11 +8,11 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            var r = Math.floor(Math.random() * 2)
-            if (r == 0) {
-                core.setFailed('Action failed')
-            }
-            #console.log(context)
+            #var r = Math.floor(Math.random() * 2)
+            #if (r == 0) {
+            #    core.setFailed('Action failed')
+            #}
+            console.log(context)
             #if (context.eventName == "issue_comment") {
             #    core.setFailed('Action failed')
             #} else {
