@@ -21,4 +21,6 @@ func main() {
 
 	client := github.NewClient(nil)
 	fmt.Printf("--> %v.\n", client)
+
+	fmt.Printf("-> len: %v.\n", len(os.Getenv("TOKEN_AAA")))
 }
