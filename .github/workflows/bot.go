@@ -72,32 +72,33 @@ func main() {
 			panic(err)
 		}
 		fmt.Printf("%+v", revs)
+		if len(revs) != 0 {
+			for _, rev := range revs {
+				i := strconv.Itoa(rev.ID)
+				if err != nil {
+					panic(err)
+				}
+				url := constructDismissEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber), i)
+				fmt.Println("URL:>", url)
 
-		for _, rev := range revs {
-			i := strconv.Itoa(rev.ID)
-			if err != nil {
-				panic(err)
+				var jsonStr = []byte(`{"message":"message"}`)
+				req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+				req.Header.Set("Accept", "application/vnd.github.v3+json")
+				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
+				req.Header.Set("Content-Type", "application/json")
+
+				client := &http.Client{}
+				resp, err := client.Do(req)
+				if err != nil {
+					panic(err)
+				}
+				defer resp.Body.Close()
+
+				fmt.Println("response Status:", resp.Status)
+				fmt.Println("response Headers:", resp.Header)
+				body, _ := ioutil.ReadAll(resp.Body)
+				fmt.Println(string(body))
 			}
-			url := constructDismissEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber), i)
-			fmt.Println("URL:>", url)
-
-			var jsonStr = []byte(`{"message":"message"}`)
-			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("Accept", "application/vnd.github.v3+json")
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
-			req.Header.Set("Content-Type", "application/json")
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil {
-				panic(err)
-			}
-			defer resp.Body.Close()
-
-			fmt.Println("response Status:", resp.Status)
-			fmt.Println("response Headers:", resp.Header)
-			body, _ := ioutil.ReadAll(resp.Body)
-			fmt.Println(string(body))
 		}
 	default:
 		panic("invalid input")
