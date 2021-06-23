@@ -49,7 +49,7 @@ func main() {
 		url = constructRequestReviewerEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber))
 		fmt.Println("URL:>", url)
 
-		var jsonStr = []byte(`{"reviewers":["quinqu", "russjones"]}`)
+		var jsonStr = []byte(`{"reviewers":["0xblush", "russjones"]}`)
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 		req.Header.Set("Accept", "application/vnd.github.v3+json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
