@@ -17,6 +17,6 @@ jobs:
           go-version: '1.16.5'
         # Run command
       - name: Invalidating reviews 
-        run: go run github/workflows/bot.go dismiss-reviewers
+        run: go run .github/workflows/bot.go dismiss-reviewers
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
