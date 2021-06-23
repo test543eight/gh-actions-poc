@@ -1,15 +1,23 @@
-on: [pull_request]
-
+on: 
+  pull_request_target: 
+    paths-ignore: '.github/workflows/**'
+  
 jobs:
-  assign:
+  auto-request-review:
+    name: Auto Request Review
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v4
+        # Install Go  
+      - uses: actions/setup-go@v1
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            console.log(context)
-            core.setFailed('Action failed 2')
+          go-version: '1.16.5'
+        # Run command
+      - name: Assigning reviewers 
+        run: go run .github/workflows/bot.go assign-reviewers
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      
 
 #var r = Math.floor(Math.random() * 2)
 #if (r == 0) {
