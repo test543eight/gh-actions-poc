@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
 )
@@ -19,6 +16,8 @@ const (
 	ASSIGN = "assign-reviewers"
 	// CHECK is the argument to check reviewers
 	CHECK = "check-reviewers"
+	// DISMISS is the argument to DISMISS reviewers
+	DISMISS = "dismiss-reviewers"
 )
 
 func main() {
@@ -32,7 +31,7 @@ func main() {
 	// 	panic(err)
 	// }
 	// fmt.Print(string(b))
-	var url string
+	// var url string
 
 	// reviewers := map[string][]string{
 	// 	"quinqu":    []string{"0xblush", "russjones"},
@@ -46,42 +45,14 @@ func main() {
 
 	switch args[0] {
 	case ASSIGN:
-		url = constructRequestReviewerEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber))
-		fmt.Println("URL:>", url)
-
-		var jsonStr = []byte(`{"reviewers":["0xblush", "russjones"]}`)
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-		req.Header.Set("Accept", "application/vnd.github.v3+json")
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
-		req.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
-		}
-		defer resp.Body.Close()
-
-		fmt.Println("response Status:", resp.Status)
-		fmt.Println("response Headers:", resp.Header)
-		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(body))
+		fmt.Println("Assigning....")
 	case CHECK:
-		// this case on review
-		url = getReviewersEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber))
-
+		fmt.Println("Checking...")
+	case DISMISS:
+		fmt.Println("Dimissing")
 	default:
 		panic("invalid input")
 	}
-
-	// ----- Get a repo -------
-	// url := getRepository(os.Getenv(repoOwner), os.Getenv(repoName))
-	// req, err := http.NewRequest("GET", url, nil)
-	// req.Header.Set("Accept", "application/vnd.github.v3+json")
-	// req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
-	// req.Header.Set("Content-Type", "application/json")
-	// ------------------------
-
 }
 
 func constructRequestReviewerEndpoint(owner, repoName, pullRequestNum string) string {
@@ -93,4 +64,8 @@ func getReviewersEndpoint(owner, repo, pullRequestNum string) string {
 	name := strings.Split(repoName, "/")[1]
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls/%s/reviews", owner, name, pullRequestNum)
 
+}
+
+func constructDismissEndpoint() string {
+	return ""
 }
