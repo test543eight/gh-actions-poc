@@ -1,8 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -50,9 +56,57 @@ func main() {
 		fmt.Println("Checking...")
 	case DISMISS:
 		fmt.Println("Dimissing")
+
+		// Getting reviews
+		resp, err := http.Get(constructRequestReviewerEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber)))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		var revs []Review
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = json.Unmarshal(body, &revs)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%+v", revs)
+
+		for _, rev := range revs {
+			i := strconv.Itoa(rev.ID)
+			if err != nil {
+				panic(err)
+			}
+			url := constructDismissEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber), i)
+			fmt.Println("URL:>", url)
+
+			var jsonStr = []byte(`{"message":"message"}`)
+			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+			req.Header.Set("Accept", "application/vnd.github.v3+json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
+			req.Header.Set("Content-Type", "application/json")
+
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				panic(err)
+			}
+			defer resp.Body.Close()
+
+			fmt.Println("response Status:", resp.Status)
+			fmt.Println("response Headers:", resp.Header)
+			body, _ := ioutil.ReadAll(resp.Body)
+			fmt.Println(string(body))
+		}
 	default:
 		panic("invalid input")
 	}
+}
+
+// Review ...
+type Review struct {
+	ID int `json:"id"`
 }
 
 func constructRequestReviewerEndpoint(owner, repoName, pullRequestNum string) string {
@@ -66,6 +120,8 @@ func getReviewersEndpoint(owner, repo, pullRequestNum string) string {
 
 }
 
-func constructDismissEndpoint() string {
-	return ""
+func constructDismissEndpoint(owner, repoName, pullRequestNum, reviewID string) string {
+	// /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals
+	name := strings.Split(repoName, "/")[1]
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls/%s/reviews/%s/dismissals", owner, name, pullRequestNum, reviewID)
 }
