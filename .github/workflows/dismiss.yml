@@ -1,5 +1,7 @@
-# Workflow will trigger on all pull request review event types
-on: pull_request_review
+on: 
+  push: 
+    paths:
+      - '.github/workflows/**'
 
 jobs: 
   check-reviews:
@@ -14,7 +16,7 @@ jobs:
         with:
           go-version: '1.16.5'
         # Run command
-      - name: Assigning reviewers 
-        run: go run .github/workflows/bot.go check-reviewers
+      - name: Invalidating reviews 
+        run: go run .github/workflows/bot.go dismiss-reviewers
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
