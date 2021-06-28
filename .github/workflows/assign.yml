@@ -7,6 +7,9 @@ jobs:
     name: Auto Request Review
     runs-on: ubuntu-latest
     steps:
+        # Check out master branch
+      - name: Check out branch 
+        uses: actions/checkout@master
         # Install Go  
       - name: Installing Go
         uses: actions/setup-go@v1
