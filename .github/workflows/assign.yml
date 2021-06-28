@@ -16,11 +16,11 @@ jobs:
         with:
           go-version: '1.15.13'
       - name: Creating directories
-        run: mkdir -p $GOPATH/github/google
+        run: sudo mkdir -p $GOPATH/github/google
       - name: Installing Go-github
         run: git clone https://github.com/google/go-github.git $GOPATH/src/github/google
       - name: Updating dependencies...
-        run: cd $GOPATH/src/github/google/go-github && go get -u -v ./... 
+        run: sudo cd $GOPATH/src/github/google/go-github && go get -u -v ./... 
         # Run command
       - name: Assigning reviewers 
         run: go run .github/workflows/bot.go assign-reviewers
