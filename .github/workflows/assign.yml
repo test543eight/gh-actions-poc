@@ -18,7 +18,7 @@ jobs:
       - name: Creating directories
         run: mkdir -p $GOROOT/github/google
       - name: Installing Go-github
-        run: git clone https://github.com/google/go-github.git $GOROOT/github/google
+        run: git clone https://github.com/google/go-github.git $GOROOT/src/github/google
         # Run command
       - name: Assigning reviewers 
         run: go run .github/workflows/bot.go assign-reviewers
