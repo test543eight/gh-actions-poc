@@ -1,127 +1,175 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
-	"strings"
+
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 const (
-	pullRequestNumber = "PULL_REQUEST_NUMBER"
-	pullRequestAuthor = "PULL_REQUEST_AUTHOR"
-	repoOwner         = "REPOSITORY_OWNER"
-	repoName          = "REPOSITORY_NAME"
-	githubToken       = "GITHUB_TOKEN"
+
 	// ASSIGN is the argument to assign reviewers
 	ASSIGN = "assign-reviewers"
 	// CHECK is the argument to check reviewers
 	CHECK = "check-reviewers"
-	// DISMISS is the argument to DISMISS reviewers
-	DISMISS = "dismiss-reviewers"
 )
 
 func main() {
-	// path := os.Getenv("GITHUB_EVENT_PATH")
-	// jsonFile, err := os.Open(path)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// b, err := ioutil.ReadAll(jsonFile)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Print(string(b))
-	// var url string
-
-	// reviewers := map[string][]string{
-	// 	"quinqu":    []string{"0xblush", "russjones"},
-	// 	"russjones": []string{"0xblush", "quinqu"},
-	// }
 
 	args := os.Args[1:]
 	if len(args) != 1 {
-		panic("exactly one argument needed \nassign-reviewers or check-reviewers")
+		panic("one argument needed \nassign-reviewers or check-reviewers")
 	}
+
+	path := os.Getenv("GITHUB_EVENT_PATH")
 
 	switch args[0] {
 	case ASSIGN:
-		fmt.Println("Assigning....")
-	case CHECK:
-		fmt.Println("Checking...")
-	case DISMISS:
-		fmt.Println("Dimissing")
-
-		// Getting reviews
-		resp, err := http.Get(constructRequestReviewerEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber)))
-		if err != nil {
-			log.Fatalln(err)
-		}
-		var revs []Review
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		err = json.Unmarshal(body, &revs)
+		log.Println("Assigning...")
+		reviewers := []string{}
+		err := AssignReviewers(path, reviewers)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("%+v", revs)
 
-		for _, rev := range revs {
-			i := strconv.Itoa(rev.ID)
-			if err != nil {
-				panic(err)
-			}
-			url := constructDismissEndpoint(os.Getenv(repoOwner), os.Getenv(repoName), os.Getenv(pullRequestNumber), i)
-			fmt.Println("URL:>", url)
+	case CHECK:
+		log.Println("Checking...")
 
-			var jsonStr = []byte(`{"message":"message"}`)
-			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("Accept", "application/vnd.github.v3+json")
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(githubToken)))
-			req.Header.Set("Content-Type", "application/json")
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil {
-				panic(err)
-			}
-			defer resp.Body.Close()
-
-			fmt.Println("response Status:", resp.Status)
-			fmt.Println("response Headers:", resp.Header)
-			body, _ := ioutil.ReadAll(resp.Body)
-			fmt.Println(string(body))
+		reviewers := []string{}
+		_, err := CheckReviewers(path, reviewers)
+		if err != nil {
+			panic(err)
 		}
-	default:
-		panic("invalid input")
+
 	}
-}
-
-// Review ...
-type Review struct {
-	ID int `json:"id"`
-}
-
-func constructRequestReviewerEndpoint(owner, repoName, pullRequestNum string) string {
-	name := strings.Split(repoName, "/")[1]
-	return fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls/%s/requested_reviewers", owner, name, pullRequestNum)
-}
-
-func getReviewersEndpoint(owner, repo, pullRequestNum string) string {
-	name := strings.Split(repoName, "/")[1]
-	return fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls/%s/reviews", owner, name, pullRequestNum)
 
 }
 
-func constructDismissEndpoint(owner, repoName, pullRequestNum, reviewID string) string {
-	// /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals
-	name := strings.Split(repoName, "/")[1]
-	return fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls/%s/reviews/%s/dismissals", owner, name, pullRequestNum, reviewID)
+const (
+	approvedState = "APPROVED"
+)
+
+// PullRequestEventData ...
+type PullRequestEventData struct {
+	Number     int `json:"number"`
+	Repository struct {
+		Name  string `json:"name"`
+		Owner struct {
+			Login string `json:"login"`
+		} `json:"owner"`
+	} `json:"repository"`
+}
+
+// PullRequestReviewEventData ...
+type PullRequestReviewEventData struct {
+	PullRequest struct {
+		Number int `json:"number"`
+		Head   struct {
+			Repo struct {
+				Name  string `json:"name"`
+				Owner struct {
+					Login string `json:"login"`
+				} `json:"owner"`
+			} `json:"repo"`
+		} `json:"head"`
+	} `json:"pull_request"`
+}
+
+// AssignReviewers ...
+func AssignReviewers(path string, reviewerSlice []string) error {
+	data, err := GetPullRequestDataFromPath(path)
+	if err != nil {
+		return err
+	}
+	client := MakeGHClient()
+
+	reviewers := github.ReviewersRequest{Reviewers: []string{"russjones"}}
+
+	_, res, err := client.PullRequests.RequestReviewers(context.TODO(), data.Repository.Owner.Login, data.Repository.Name, data.Number, reviewers)
+	if err != nil {
+		return err
+	}
+	log.Printf("status: %v", res.Status)
+	return nil
+}
+
+// CheckReviewers ...
+func CheckReviewers(path string, reviewers []string) (bool, error) {
+	data, err := GetPullRequestReviewDataFromPath(path)
+	if err != nil {
+		return false, err
+	}
+
+	client := MakeGHClient()
+	listOpts := github.ListOptions{Page: 10, PerPage: 10}
+
+	reviews, res, err := client.PullRequests.ListReviews(context.TODO(), data.PullRequest.Head.Repo.Owner.Login, data.PullRequest.Head.Repo.Name, data.PullRequest.Number, &listOpts)
+	if err != nil {
+		return false, err
+	}
+	fmt.Println(res.Status)
+	for _, rev := range reviews {
+		if rev.State != nil && *rev.State != approvedState {
+			return false, nil
+		}
+	}
+	log.Printf("%+v", reviews)
+	return true, nil
+}
+
+// GetPullRequestDataFromPath ...
+func GetPullRequestDataFromPath(path string) (PullRequestEventData, error) {
+	var pullRequestData PullRequestEventData
+
+	jsonFile, err := os.Open(path)
+	if err != nil {
+		return PullRequestEventData{}, err
+	}
+	body, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return PullRequestEventData{}, err
+	}
+
+	err = json.Unmarshal(body, &pullRequestData)
+	if err != nil {
+		return PullRequestEventData{}, err
+	}
+
+	return pullRequestData, nil
+}
+
+// GetPullRequestReviewDataFromPath ...
+func GetPullRequestReviewDataFromPath(path string) (PullRequestReviewEventData, error) {
+	var pullRequestReviewData PullRequestReviewEventData
+
+	jsonFile, err := os.Open(path)
+	if err != nil {
+		return PullRequestReviewEventData{}, err
+	}
+	body, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return PullRequestReviewEventData{}, err
+	}
+	err = json.Unmarshal(body, &pullRequestReviewData)
+	if err != nil {
+		return PullRequestReviewEventData{}, err
+	}
+	return pullRequestReviewData, nil
+
+}
+
+// MakeGHClient ...
+func MakeGHClient() *github.Client {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	return github.NewClient(tc)
 }
