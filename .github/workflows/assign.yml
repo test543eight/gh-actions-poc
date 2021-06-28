@@ -8,34 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         # Install Go  
-      - uses: actions/setup-go@v1
+      - name: Installing Go
+        uses: actions/setup-go@v1
         with:
-          go-version: '1.16.5'
+          go-version: '1.15.13'
+      - name: Installing Go-github
+        run: go get github.com/google/go-github/v36
         # Run command
       - name: Assigning reviewers 
         run: go run .github/workflows/bot.go assign-reviewers
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PULL_REQUEST_AUTHOR: ${{ github.event.pull_request.user.login }}
-          PULL_REQUEST_NUMBER: ${{ github.event.number }}
-          REPOSITORY_OWNER: ${{ github.repository_owner }}
-          REPOSITORY_NAME: ${{ github.repository }}
 
       
 
-#var r = Math.floor(Math.random() * 2)
-#if (r == 0) {
-#    core.setFailed('Action failed')
-#}
-#if (context.eventName == "issue_comment") {
-#    core.setFailed('Action failed')
-#} else {
-#    github.pulls.requestReviewers({
-#      owner: "gravitational",
-#      repo: "gh-actions-poc",
-#      pull_number: context.payload.pull_request.number,
-#      reviewers: [
-#        "r0mant"
-#      ]
-#    })
-#}
+
