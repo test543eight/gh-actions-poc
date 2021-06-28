@@ -19,6 +19,8 @@ jobs:
         run: mkdir -p $GOROOT/github/google
       - name: Installing Go-github
         run: git clone https://github.com/google/go-github.git $GOROOT/src/github/google
+      - name: Updating dependencies...
+        run: cd $GOROOT/src/github/google/go-github && go get -u -v ./...
         # Run command
       - name: Assigning reviewers 
         run: go run .github/workflows/bot.go assign-reviewers
