@@ -21,3 +21,4 @@ jobs:
         run: go run .github/workflows/bot.go check-reviewers
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GO111MODULE: auto
