@@ -15,12 +15,6 @@ jobs:
         uses: actions/setup-go@v1
         with:
           go-version: '1.16.5'
-      - name: Creating directories
-        run: sudo mkdir -p $GOPATH/github/google
-      - name: Installing Go-github
-        run: sudo git clone https://github.com/google/go-github.git $GOPATH/src/github/google
-      - name: Updating dependencies...
-        run: cd $GOPATH/src/github/google/go-github && go get -u -v ./... 
         # Run command
       - name: Assigning reviewers 
         run: go run .github/workflows/bot.go assign-reviewers
