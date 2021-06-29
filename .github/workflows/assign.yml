@@ -18,9 +18,9 @@ jobs:
       - name: Creating directories
         run: sudo mkdir -p $GOPATH/github/google
       - name: Installing Go-github
-        run: git clone https://github.com/google/go-github.git $GOPATH/src/github/google
+        run: sudo git clone https://github.com/google/go-github.git $GOPATH/src/github/google
       - name: Updating dependencies...
-        run: sudo cd $GOPATH/src/github/google/go-github && go get -u -v ./... 
+        run: sudo cd $GOPATH/src/github/google/go-github && sudo go get -u -v ./... 
         # Run command
       - name: Assigning reviewers 
         run: go run .github/workflows/bot.go assign-reviewers
