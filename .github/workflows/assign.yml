@@ -12,7 +12,8 @@ on:
   pull_request_target:
     paths-ignore:
         - '.github/**'
-    types: ['!synchronize']
+    types: [assigned, opened, synchronize, reopened]
+
  
 jobs:
   auto-request-review:
