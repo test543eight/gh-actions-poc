@@ -10,8 +10,8 @@
 # to the repository.
 on: 
   pull_request_target:
-    paths-ignore:
-        - '.github/**'
+    # paths-ignore:
+    #     - '.github/**'
     types: ['!synchronize']
  
 jobs:
