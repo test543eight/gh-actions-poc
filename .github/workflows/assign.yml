@@ -9,7 +9,9 @@
 # on the base of the PR, that target also grants the GITHUB_TOKEN write access
 # to the repository.
 on: 
-  pull_request:
+  pull_request_target:
+    paths-ignore:
+        - '.github/**'
     types: ['!synchronize']
  
 jobs:
