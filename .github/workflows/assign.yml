@@ -7,10 +7,9 @@
 
 on: 
   pull_request_target:
+    # paths-ignore:
+    #     - '.github/**'
     types: ['!synchronize']
-    paths-ignore:
-        - ".github/**"
- 
 jobs:
   auto-request-review:
     name: Auto Request Review
