@@ -4,6 +4,7 @@
 # NOTE: Due to the sensitive nature of this workflow, it must always be run
 # against master AND with minimal permissions. These properties must always
 # be maintained!
+name: Assign
 
 on: 
   pull_request_target:
