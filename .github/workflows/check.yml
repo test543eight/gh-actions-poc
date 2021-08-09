@@ -7,9 +7,13 @@
 # be maintained!
 on: 
   pull_request_review:
+    paths-ignore:
+      - '.github/**'
   pull_request: 
     types: [synchronize]
-
+    paths-ignore:
+      - '.github/**'
+    
 
 jobs: 
   check-reviews:
