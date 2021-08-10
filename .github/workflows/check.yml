@@ -7,12 +7,10 @@
 # be maintained!
 on: 
   pull_request_review:
-    paths-ignore:
-      - '.github/**'
-  pull_request: 
+    type: [submitted, edited, dismissed]
+  pull_request_target: 
     types: [synchronize]
-    paths-ignore:
-      - '.github/**'
+
     
 
 jobs: 
