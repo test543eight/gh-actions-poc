@@ -8,8 +8,6 @@ name: Assign
 
 on: 
   pull_request_target:
-    paths-ignore:
-        - '.github/**'
     types: [assigned, opened, reopened, ready_for_review]
 
  
