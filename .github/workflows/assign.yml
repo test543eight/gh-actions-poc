@@ -10,8 +10,6 @@ on:
   pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
 
- 
-
 jobs:
   auto-request-review:
     name: Auto Request Review
