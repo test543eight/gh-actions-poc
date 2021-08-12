@@ -7,12 +7,6 @@
 # be maintained!
 name: Check
 on: 
-  workflow_run:
-    # Run after the completed 'Assign' workflow to fail checks so merge is not 
-    # possible directly after assigning reviewers. 
-    workflows: ["Assign"]
-    types: 
-      - completed
   pull_request_review:
     type: [submitted, edited, dismissed]
   pull_request_target: 
