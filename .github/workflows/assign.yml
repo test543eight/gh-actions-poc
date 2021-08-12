@@ -5,7 +5,6 @@
 # against master AND with minimal permissions. These properties must always
 # be maintained!
 name: Assign
-
 on: 
   pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]

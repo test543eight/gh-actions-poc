@@ -1,6 +1,6 @@
 
 # Workflow will trigger on all pull request review event types, on commit push to a 
-# pull request (synchronize) event type, and on the Assign workflow run
+# pull request (synchronize) event type
 # 
 # NOTE: Due to the sensitive nature of this workflow, it must always be run
 # against master AND with minimal permissions. These properties must always
@@ -11,8 +11,6 @@ on:
     type: [submitted, edited, dismissed]
   pull_request_target: 
     types: [synchronize]
-
-    
 
 jobs: 
   check-reviews:
