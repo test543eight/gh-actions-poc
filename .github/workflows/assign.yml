@@ -8,6 +8,8 @@ name: Assign
 on: 
   pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
+    paths-ignore: 
+      - '.github/workflows/**'
 
 jobs:
   auto-request-review:

@@ -9,8 +9,12 @@ name: Check
 on: 
   pull_request_review:
     type: [submitted, edited, dismissed]
+    paths-ignore: 
+      - '.github/workflows/**'
   pull_request_target: 
     types: [assigned, opened, reopened, ready_for_review, synchronize]
+    paths-ignore: 
+      - '.github/workflows/**'
 
 jobs: 
   check-reviews:
