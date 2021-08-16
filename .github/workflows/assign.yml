@@ -19,8 +19,7 @@ jobs:
       - name: Checkout master branch
         uses: actions/checkout@v2
         with: 
-          ref: jane/ci
-        
+          ref: jane/dev-workflow-automation        
       - name: Installing the latest version of Go.
         uses: actions/setup-go@v2
       # Run "assign-reviewers" subcommand on bot.
