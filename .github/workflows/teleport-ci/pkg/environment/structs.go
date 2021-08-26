@@ -35,7 +35,6 @@ type PullRequestEvent struct {
 	Number      int        `json:"number"`
 	PullRequest PR         `json:"pull_request"`
 	Repository  Repository `json:"repository"`
-	// EventSHAs PullRequestEventCommitSHAs `json:"pull_request"`
 }
 
 // ReviewMetadata contains metadata about the pull request

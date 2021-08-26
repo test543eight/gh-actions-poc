@@ -158,11 +158,11 @@ func verifyCommit(repoOwner, repoName, baseSHA, headSHA string) error {
 
 func dismissStaleWorkflows(token, owner, repoName, branch string, cl *github.Client) error {
 	var targetWorkflow *github.Workflow
-	list2, _, err := cl.Actions.ListWorkflows(context.TODO(), owner, repoName, &github.ListOptions{})
+	workflows, _, err := cl.Actions.ListWorkflows(context.TODO(), owner, repoName, &github.ListOptions{})
 	if err != nil {
 		return err
 	}
-	for _, w := range list2.Workflows {
+	for _, w := range workflows.Workflows {
 		if *w.Name == ci.CHECKWORKFLOW {
 			targetWorkflow = w
 			break
