@@ -59,7 +59,6 @@ func (c *Bot) check(isInternal bool, pr *environment.PullRequestMetadata, requir
 	}
 
 	if hasNewCommit(pr.HeadSHA, currentReviews) && !isInternal {
-		log.Printf("New commit pushed from external contributor's pull request.")
 		// Check file changes/commit verification
 		err := c.verify(pr.RepoOwner, pr.RepoName, pr.BaseSHA, pr.HeadSHA)
 		if err != nil {
@@ -153,7 +152,7 @@ func verifyCommit(repoOwner, repoName, baseSHA, headSHA string) error {
 	if strings.Contains(payload, teleportci.GITHUBCOMMIT) && *verification.Verified {
 		return nil
 	}
-	return trace.BadParameter("commit is not verified or is not signed by GitHub.")
+	return trace.BadParameter("commit is not verified and/or is not signed by GitHub.")
 }
 
 func dismissStaleWorkflows(token, owner, repoName, branch string, cl *github.Client) error {

@@ -31,7 +31,6 @@ func main() {
 		log.Fatal("missing default-reviewers flag.")
 
 	}
-
 	subcommand := os.Args[len(os.Args)-1]
 
 	// Creating and authenticating the Github client
@@ -42,7 +41,7 @@ func main() {
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
-	// Getting event object path and token
+	// Getting event object path
 	path := os.Getenv(ci.GITHUBEVENTPATH)
 
 	env, err := environment.New(environment.Config{Client: client,
@@ -61,7 +60,7 @@ func main() {
 	}
 	switch subcommand {
 	case ci.ASSIGN:
-		log.Println("Assigning reviewers...")
+		log.Println("Assigning reviewers.")
 		err = bot.Assign()
 		if err != nil {
 			log.Fatal(err)
@@ -69,7 +68,7 @@ func main() {
 		log.Print("Assign completed.")
 
 	case ci.CHECK:
-		log.Println("Checking reviewers...")
+		log.Println("Checking reviewers.")
 		err = bot.Check()
 		if err != nil {
 			log.Fatal(err)

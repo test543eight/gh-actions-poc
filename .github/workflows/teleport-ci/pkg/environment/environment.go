@@ -72,7 +72,6 @@ func New(c Config) (*Environment, error) {
 		return nil, trace.Wrap(err)
 	}
 	env.Client = c.Client
-
 	revs, err := c.unmarshalRevs(c.Reviewers, c.Client)
 	if err != nil {
 		return nil, trace.Wrap(err)

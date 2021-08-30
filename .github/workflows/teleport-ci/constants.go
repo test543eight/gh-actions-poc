@@ -7,8 +7,9 @@ const (
 	// CHECK is the argument to check reviewers
 	CHECK = "check-reviewers"
 
+	// WORKFLOWCREDS is the name of the environment variable that is the 
+	// access token with write permissions for GH actions. 
 	WORKFLOWCREDS = "WORKFLOW_RUN_CREDENTIALS"
-
 
 	// GITHUBEVENTPATH is the env variable that
 	// contains the path to the event payload 
@@ -47,6 +48,6 @@ const (
 	// REOPENED is an event type
 	REOPENED = "reopened"
 
-	// READY  is an event type
+	// READY is an event type
 	READY = "ready_for_review"
 )

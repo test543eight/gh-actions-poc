@@ -1,11 +1,9 @@
 # Development Workflow Automation Bot 
 
-
 ## Purpose
 This bot automates the workflow of the pull request process. It does this by automatically assigning reviewers to a pull request and checking pull request reviews for approvals.
 
 ## Prerequisites
-
 ### Set Up Secrets 
 
 [Documentation for setting up secrets](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository)
@@ -58,8 +56,7 @@ This bot supports the following events:
 
 
 
-Create the following workflow files in the master branch: 
-
+Create the following workflow files in the master branch:   
 Assigning Reviewers
 
 ```yaml
@@ -84,7 +81,6 @@ jobs:
         run: cd .github/workflows/teleport-ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers=${{ secrets.defaultreviewers }} --reviewers=${{ secrets.reviewers }} assign-reviewers
 
 ```
-
 
 Checking reviews
 ```yaml
@@ -111,7 +107,3 @@ jobs:
         run: cd .github/workflows/teleport-ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers=${{ secrets.defaultreviewers }} --reviewers=${{ secrets.reviewers }} check-reviewers
 
 ```
-
-## Dependencies
-[oauth2](https://github.com/golang/oauth2) to authenticate the GitHub client.   
-[go-github](https://github.com/google/go-github) client library to make requests to the GitHub API.
