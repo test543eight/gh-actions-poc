@@ -1,0 +1,20 @@
+name: Dismiss Stale Workflows Runs
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron:  '* * * * *' 
+
+jobs: 
+  dismiss-stale-runs:
+    name: Dismiss Stale Workflow Runs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master branch 
+        uses: actions/checkout@v2
+        with:
+          ref: jane/ci
+      - name: Installing the latest version of Go.
+        uses: actions/setup-go@v2
+        # Run "check-reviewers" subcommand on bot.
+      - name: Dismiss
+        run: cd .github/workflows/teleport-ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} dismiss-runs
