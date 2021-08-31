@@ -29,8 +29,9 @@ func main() {
 	}
 	if *defaultReviewers == "" {
 		log.Fatal("missing default-reviewers flag.")
-
 	}
+	// Delete this after test
+	*workflowCredentials = "test"
 	subcommand := os.Args[len(os.Args)-1]
 
 	// Creating and authenticating the Github client
