@@ -4,17 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"sort"
 	"strings"
 	"time"
 
 	ci "github.com/gravitational/gh-actions-poc/.github/workflows/teleport-ci"
 	teleportci "github.com/gravitational/gh-actions-poc/.github/workflows/teleport-ci"
 	"github.com/gravitational/gh-actions-poc/.github/workflows/teleport-ci/pkg/environment"
-	"golang.org/x/oauth2"
 
 	"github.com/google/go-github/v37/github"
 	"github.com/gravitational/trace"
@@ -24,11 +20,12 @@ import (
 func (c *Bot) Check() error {
 	env := c.Environment
 	pr := c.Environment.PullRequest
-	err := dismissStaleWorkflows(env.WorkflowCreds, pr.RepoOwner, pr.RepoName, pr.BranchName, env.Client)
-	if err != nil {
-		return trace.Wrap(err)
+	if c.Environment.IsInternal(pr.Author) {
+		err := DismissStaleWorkflowRuns(env.GetToken(), pr.RepoOwner, pr.RepoName, pr.BranchName, env.Client)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 	}
-	log.Println("Dismissed stale runs.")
 	listOpts := github.ListOptions{}
 	reviews, _, err := env.Client.PullRequests.ListReviews(context.TODO(), pr.RepoOwner,
 		pr.RepoName,
@@ -153,76 +150,4 @@ func verifyCommit(repoOwner, repoName, baseSHA, headSHA string) error {
 		return nil
 	}
 	return trace.BadParameter("commit is not verified and/or is not signed by GitHub.")
-}
-
-func dismissStaleWorkflows(token, owner, repoName, branch string, cl *github.Client) error {
-	var targetWorkflow *github.Workflow
-	workflows, _, err := cl.Actions.ListWorkflows(context.TODO(), owner, repoName, &github.ListOptions{})
-	if err != nil {
-		return err
-	}
-	for _, w := range workflows.Workflows {
-		if *w.Name == ci.CHECKWORKFLOW {
-			targetWorkflow = w
-			break
-		}
-	}
-	list, _, err := cl.Actions.ListWorkflowRunsByID(context.TODO(), owner, repoName, *targetWorkflow.ID, &github.ListWorkflowRunsOptions{Branch: branch})
-	if err != nil {
-		return err
-	}
-	sort.Sort(ByTime(list.WorkflowRuns))
-	for i, run := range list.WorkflowRuns {
-		if i == len(list.WorkflowRuns)-1 {
-			break
-		}
-		err := deleteRun(token, owner, repoName, *run.ID)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// deleteRun deletes a workflow run.
-// Note: the go-github client library does not support this endpoint.
-func deleteRun(token, owner, repo string, runID int64) error {
-	// Creating and authenticating the client
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	client := oauth2.NewClient(context.Background(), ts)
-	endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/runs/%v", owner, repo, runID)
-	req, err := http.NewRequest("DELETE", endpoint, nil)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
-	return nil
-}
-
-type ByTime []*github.WorkflowRun
-
-func (s ByTime) Len() int {
-	return len(s)
-}
-
-func (s ByTime) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s ByTime) Less(i, j int) bool {
-	time1 := s[i].CreatedAt
-	time2 := s[j].CreatedAt
-	return time1.Time.Before(time2.Time)
 }

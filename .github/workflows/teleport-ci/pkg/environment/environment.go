@@ -20,7 +20,7 @@ type Config struct {
 	Reviewers            string
 	DefaultReviewers     string
 	EventPath            string
-	WorkflowCreds        string
+	Token string 
 	unmarshalRevs        unmarshalReviewersFn
 	unmarshalDefaultRevs unmarshalDefaultReviewersFn
 }
@@ -29,7 +29,7 @@ type Config struct {
 type Environment struct {
 	Client           *github.Client
 	PullRequest      *PullRequestMetadata
-	WorkflowCreds           string
+	token string 
 	reviewers        map[string][]string
 	defaultReviewers []string
 	action           string
@@ -52,8 +52,8 @@ func (c *Config) CheckAndSetDefaults() error {
 	if c.EventPath == "" {
 		return trace.BadParameter("missing parameter EventPath.")
 	}
-	if c.WorkflowCreds == "" {
-		return trace.BadParameter("missing parameter WorkflowCreds.")
+	if c.Token == "" {
+		return trace.BadParameter("missing parameter token.")
 	}
 	if c.unmarshalDefaultRevs == nil {
 		c.unmarshalDefaultRevs = unmarshalDefaultReviewers
@@ -86,8 +86,6 @@ func New(c Config) (*Environment, error) {
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	env.WorkflowCreds = c.WorkflowCreds
-	log.Printf("%+v", env.PullRequest)
 	return &env, nil
 }
 
@@ -154,6 +152,11 @@ func (e *Environment) GetReviewersForAuthor(user string) []string {
 func (e *Environment) IsInternal(author string) bool {
 	_, ok := e.reviewers[author]
 	return ok
+}
+
+// GetToken gets token 
+func (e *Environment) GetToken() string {
+	return e.token
 }
 
 // SetPullRequest sets the pull request in which the environment
