@@ -9,7 +9,7 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func DimissStaleWorkflowRunsForExternalContributors(token, repoName, repoOwner string, clt *github.Client) error {
+func DimissStaleWorkflowRunsForExternalContributors(token, repoOwner, repoName string, clt *github.Client) error {
 	pulls, _, err := clt.PullRequests.List(context.TODO(), repoOwner, repoName, &github.PullRequestListOptions{State: ci.OPEN})
 	if err != nil {
 		return err
