@@ -46,7 +46,7 @@ func New(c Config) (*Bot, error) {
 
 // CheckAndSetDefaults verifies configuration and sets defaults
 func (c *Config) CheckAndSetDefaults() error {
-	if c.Environment != nil {
+	if c.Environment == nil {
 		return trace.BadParameter("missing parameter Environment. ")
 	}
 	return nil

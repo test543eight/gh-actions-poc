@@ -137,7 +137,7 @@ func verifyCommit(repoOwner, repoName, baseSHA, headSHA string) error {
 		return trace.Wrap(err)
 	}
 	if len(comparison.Files) != 0 {
-		return trace.BadParameter("detected file change.")
+		return trace.BadParameter("detected file change")
 	}
 	commit, _, err := client.Repositories.GetCommit(context.TODO(), repoOwner, repoName, headSHA)
 	if err != nil {
@@ -149,5 +149,5 @@ func verifyCommit(repoOwner, repoName, baseSHA, headSHA string) error {
 	if strings.Contains(payload, teleportci.GITHUBCOMMIT) && *verification.Verified {
 		return nil
 	}
-	return trace.BadParameter("commit is not verified and/or is not signed by GitHub.")
+	return trace.BadParameter("commit is not verified and/or is not signed by GitHub")
 }
