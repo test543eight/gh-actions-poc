@@ -89,6 +89,7 @@ func verifyAndConstruct(token, reviewers, defaultReviewers string) (*bots.Bot, e
 		Reviewers:        reviewers,
 		DefaultReviewers: defaultReviewers,
 		EventPath:        path,
+		Token: token,
 	})
 	if err != nil {
 		return nil, trace.Wrap(err)
