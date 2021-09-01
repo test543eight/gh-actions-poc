@@ -1,4 +1,4 @@
-package teleportci
+package ci
 
 const (
 	// ASSIGN is the argument to assign reviewers

@@ -188,7 +188,7 @@ func (e *Environment) setPullRequest(body []byte) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		if push.Number != 0 && push.Repository.Name != "" && push.Repository.Owner.Name != "" && push.PullRequest.User.Login != "" && push.CommitSHA != "" {
+		if push.Number != 0 && push.Repository.Name != "" && push.Repository.Owner.Name != "" && push.PullRequest.User.Login != "" && push.CommitSHA != "" && push.PullRequest.Head.BranchName != "" && push.BeforeSHA != "" {
 			e.PullRequest = &PullRequestMetadata{
 				Author:     push.PullRequest.User.Login,
 				RepoName:   push.Repository.Name,
@@ -208,7 +208,7 @@ func (e *Environment) setPullRequest(body []byte) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		if pull.Number != 0 && pull.Repository.Name != "" && pull.Repository.Owner.Name != "" && pull.PullRequest.User.Login != "" && pull.PullRequest.Head.SHA != "" && pull.PullRequest.Base.SHA != "" {
+		if pull.Number != 0 && pull.Repository.Name != "" && pull.Repository.Owner.Name != "" && pull.PullRequest.User.Login != "" && pull.PullRequest.Head.SHA != "" && pull.PullRequest.Base.SHA != "" && pull.PullRequest.Head.BranchName != "" {
 			e.PullRequest = &PullRequestMetadata{
 				Author:     pull.PullRequest.User.Login,
 				RepoName:   pull.Repository.Name,
@@ -229,7 +229,7 @@ func (e *Environment) setPullRequest(body []byte) error {
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		if rev.PullRequest.Number != 0 && rev.Review.User.Login != "" && rev.Repository.Name != "" && rev.Repository.Owner.Name != "" {
+		if rev.PullRequest.Number != 0 && rev.Review.User.Login != "" && rev.Repository.Name != "" && rev.Repository.Owner.Name != "" && rev.PullRequest.Head.SHA != "" && rev.PullRequest.Base.SHA != "" && rev.PullRequest.Head.BranchName != "" {
 			e.PullRequest = &PullRequestMetadata{
 				Author:     rev.PullRequest.Author.Login,
 				Reviewer:   rev.Review.User.Login,
