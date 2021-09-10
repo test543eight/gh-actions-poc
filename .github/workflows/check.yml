@@ -28,4 +28,4 @@ jobs:
         uses: actions/setup-go@v2
         # Run "check-reviewers" subcommand on bot.
       - name: Checking reviewers
-        run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers="[quinqu, 0xblush]" --reviewers="{\"0xblush\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers
+        run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }}  --reviewers="{\"0xblush\":[\"quinqu\"], \"quinqu\":[\"0xblush\"], \"\":[\"quinqu\", \"0xblush\"]}" check-reviewers
