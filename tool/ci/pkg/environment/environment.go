@@ -9,6 +9,7 @@ import (
 
 	"github.com/gravitational/gh-actions-poc/tool/ci"
 	"github.com/gravitational/trace"
+	"github.com/sirupsen/logrus"
 
 	"github.com/google/go-github/v37/github"
 )
@@ -118,6 +119,7 @@ func unmarshalReviewers(str string, client *github.Client) (map[string][]string,
 			return nil, trace.Wrap(err)
 		}
 	}
+	logrus.Printf("reviewers map %+v", m)
 	if !hasDefaultReviewers {
 		return nil, trace.BadParameter("default reviewers are not set. set default reviewers with an empty string as a key")
 	}

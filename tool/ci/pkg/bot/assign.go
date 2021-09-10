@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gravitational/trace"
+	"github.com/sirupsen/logrus"
 
 	"github.com/google/go-github/v37/github"
 )
@@ -14,6 +15,7 @@ func (a *Bot) Assign(ctx context.Context) error {
 	// Getting and setting reviewers for author of pull request
 	r := a.Environment.GetReviewersForAuthor(pullReq.Author)
 	client := a.Environment.Client
+	logrus.Printf("requesting reviews from %+v", r)
 	// Assigning reviewers to pull request
 	pr, _, err := client.PullRequests.RequestReviewers(ctx,
 		pullReq.RepoOwner,
