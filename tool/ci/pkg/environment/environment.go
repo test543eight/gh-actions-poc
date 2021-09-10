@@ -3,6 +3,7 @@ package environment
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -127,7 +128,7 @@ func unmarshalReviewers(str string, client *github.Client) (map[string][]string,
 
 // userExists checks if a user exists
 func userExists(user string, client *github.Client) (*github.User, error) {
-	users, resp, err := client.Search.Users(context.TODO(), user, &github.SearchOptions{})
+	users, resp, err := client.Search.Users(context.TODO(), user, &github.SearchOptions{TextMatch: true})
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil, trace.Wrap(err)
 	}
@@ -135,6 +136,7 @@ func userExists(user string, client *github.Client) (*github.User, error) {
 	case len(users.Users) == 0:
 		return nil, trace.NotFound("user %s does not exist", user)
 	case len(users.Users) != 1:
+		fmt.Printf("%+v", users.Users)
 		return nil, trace.BadParameter("ambiguous user %s", user)
 	}
 	return users.Users[0], nil
