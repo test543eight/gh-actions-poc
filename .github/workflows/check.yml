@@ -9,12 +9,9 @@ name: Check
 on: 
   pull_request_review:
     type: [submitted, edited, dismissed]
-    paths-ignore: 
-      - '.github/workflows/**'
+
   pull_request_target: 
     types: [assigned, opened, reopened, ready_for_review, synchronize]
-    paths-ignore: 
-      - '.github/workflows/**'
 
 jobs: 
   check-reviews:
@@ -29,4 +26,4 @@ jobs:
         uses: actions/setup-go@v2
         # Run "check-reviewers" subcommand on bot.
       - name: Checking reviewers
-        run: cd .github/workflows/teleport-ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers="[quinqu, 0xblush]" --reviewers="{\"0xblush\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers
+        run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers="[quinqu, 0xblush]" --reviewers="{\"0xblush\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers

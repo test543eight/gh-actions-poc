@@ -8,8 +8,6 @@ name: Assign
 on: 
   pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
-    paths-ignore: 
-      - '.github/workflows/**'
 
 jobs:
   auto-request-review:
@@ -24,6 +22,6 @@ jobs:
         uses: actions/setup-go@v2
       # Run "assign-reviewers" subcommand on bot.
       - name: Assigning reviewers 
-        run: cd .github/workflows/teleport-ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers="[quinqu, 0xblush]" --reviewers="{\"0xblush\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" assign-reviewers
+        run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --default-reviewers="[quinqu, 0xblush]" --reviewers="{\"0xblush\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" assign-reviewers
 
       

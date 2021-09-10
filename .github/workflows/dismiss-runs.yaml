@@ -15,4 +15,4 @@ jobs:
         uses: actions/setup-go@v2
         # Run "check-reviewers" subcommand on bot.
       - name: Dismiss
-        run: cd .github/workflows/teleport-ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} dismiss-runs
+        run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} dismiss-runs
