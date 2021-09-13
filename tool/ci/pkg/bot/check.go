@@ -49,6 +49,7 @@ func (c *Bot) Check(ctx context.Context) error {
 		}
 		currentReviewsSlice = append(currentReviewsSlice, currReview)
 	}
+
 	err = c.check(ctx, pr, c.Environment.GetReviewersForAuthor(pr.Author), mostRecent(currentReviewsSlice))
 	if err != nil {
 		return trace.Wrap(err)
@@ -72,7 +73,7 @@ func (c *Bot) check(ctx context.Context, pr *environment.PullRequestMetadata, re
 	if len(currentReviews) == 0 {
 		return trace.BadParameter("pull request has no reviews")
 	}
-	log.Printf("checking if %v has approvals from the required reviewers %+v", pr.Author, required)
+	log.Printf("Checking if %v has approvals from the required reviewers %+v", pr.Author, required)
 	for _, requiredReviewer := range required {
 		if !containsApprovalReview(requiredReviewer, currentReviews) {
 			return trace.BadParameter("required reviewers have not yet approved")
@@ -150,6 +151,7 @@ func dismissMessage(pr *environment.PullRequestMetadata, required []string) stri
 // hasNewCommit sees if the pull request has a new commit
 // by comparing commits after the push event
 func hasNewCommit(headSHA string, revs []review) bool {
+	log.Printf("%+v", revs)
 	for _, v := range revs {
 		if v.commitID != headSHA {
 			return true
