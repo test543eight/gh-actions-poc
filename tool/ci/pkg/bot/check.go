@@ -141,7 +141,7 @@ func containsApprovalReview(reviewer string, reviews []review) bool {
 // dimissMessage returns the dimiss message when a review is dismissed
 func dismissMessage(pr *environment.PullRequestMetadata, required []string) string {
 	var buffer bytes.Buffer
-	buffer.WriteString("new commit pushed, please re-review")
+	buffer.WriteString("new commit pushed, please re-review ")
 	for _, reviewer := range required {
 		buffer.WriteString(fmt.Sprintf("@%v ", reviewer))
 	}
