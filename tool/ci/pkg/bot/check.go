@@ -180,11 +180,15 @@ func (c *Bot) verifyCommit(ctx context.Context) error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
+
 	verification := commit.Commit.Verification
-	// Get commit object
-	payload := *verification.Payload
-	if strings.Contains(payload, ci.GithubCommit) && *verification.Verified {
-		return nil
+	if verification != nil {
+		if verification.Payload != nil && verification.Verified != nil {
+			payload := *verification.Payload
+			if strings.Contains(payload, ci.GithubCommit) && *verification.Verified {
+				return nil
+			}
+		}
 	}
 	return trace.BadParameter("commit is not verified and/or is not signed by GitHub")
 }
