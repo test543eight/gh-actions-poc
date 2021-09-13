@@ -34,6 +34,10 @@ func (c *Bot) Check(ctx context.Context) error {
 	}
 	currentReviewsSlice := []review{}
 	for _, rev := range reviews {
+		err := checkReviewFields(rev)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 		currReview := review{
 			name:        *rev.User.Login,
 			status:      *rev.State,
@@ -95,6 +99,22 @@ func mostRecent(currentReviews []review) []review {
 		reviews = append(reviews, v)
 	}
 	return reviews
+}
+
+func checkReviewFields(review *github.PullRequestReview) error {
+	switch {
+	case review.ID == nil:
+		return trace.Errorf("review ID is nil. review: %+v", review)
+	case review.State == nil:
+		return trace.Errorf("review State is nil. review: %+v", review)
+	case review.CommitID == nil:
+		return trace.Errorf("review CommitID is nil. review: %+v", review)
+	case review.SubmittedAt == nil:
+		return trace.Errorf("review SubmittedAt is nil. review: %+v", review)
+	case review.User.Login == nil:
+		return trace.Errorf("reviewer User.Login is nil. review: %+v", review)
+	}
+	return nil
 }
 
 // review is a pull request review

@@ -166,6 +166,8 @@ func (e *Environment) GetToken() string {
 	return e.token
 }
 
+
+
 // GetPullRequest gets the pull request metadata in the current context.
 func GetPullRequest(path string) (*PullRequestMetadata, error) {
 	var actionType action
