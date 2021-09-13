@@ -10,6 +10,7 @@ import (
 
 	"github.com/gravitational/gh-actions-poc/tool/ci"
 	"github.com/gravitational/gh-actions-poc/tool/ci/pkg/environment"
+	"github.com/sirupsen/logrus"
 
 	"github.com/google/go-github/v37/github"
 	"github.com/gravitational/trace"
@@ -19,6 +20,7 @@ import (
 func (c *Bot) Check(ctx context.Context) error {
 	env := c.Environment
 	pr := c.Environment.PullRequest
+	logrus.Printf("Checking reviewers for %s", pr.Author)
 	if c.Environment.IsInternal(pr.Author) {
 		err := c.GithubClient.DismissStaleWorkflowRuns(ctx, env.GetToken(), pr.RepoOwner, pr.RepoName, pr.BranchName)
 		if err != nil {
