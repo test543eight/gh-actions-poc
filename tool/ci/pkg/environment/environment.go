@@ -70,7 +70,6 @@ func (c *Config) CheckAndSetDefaults() error {
 
 // New creates a new instance of Environment.
 func New(c Config) (*Environment, error) {
-
 	err := c.CheckAndSetDefaults()
 	if err != nil {
 		return nil, trace.Wrap(err)

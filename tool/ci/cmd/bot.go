@@ -37,7 +37,13 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Print("Assign completed")
-
+	case "assign-reviewers-ex":
+		log.Println("Assigning for external")
+		err := dismissRuns(ctx, *token)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Assigning for external completed.")
 	case ci.Check:
 		log.Println("Checking reviewers")
 		bot, err := constructBot(ctx, *token, *reviewers)
@@ -63,6 +69,24 @@ func main() {
 			"\tdismiss-runs \n\t dismisses stale workflow runs for external contributors.\n", subcommand)
 	}
 
+}
+
+func triggerAssign(ctx context.Context, token string) error {
+	clt := makeGithubClient(ctx, token)
+	repository := os.Getenv(ci.GithubRepository)
+	if repository == "" {
+		return trace.BadParameter("environment variable GITHUB_REPOSITORY is not set")
+	}
+	metadata := strings.Split(repository, "/")
+	if len(metadata) != 2 {
+		return trace.BadParameter("environment variable GITHUB_REPOSITORY is not in the correct format,\n the valid format is '<repo owner>/<repo name>'")
+	}
+	resp, err := clt.Actions.CreateWorkflowDispatchEventByFileName(ctx, metadata[0], metadata[1], "check.yml", github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
+	if err != nil {
+		return err
+	}
+	log.Printf("%+v", resp)
+	return nil
 }
 
 func constructBot(ctx context.Context, token, reviewers string) (*bots.Bot, error) {
