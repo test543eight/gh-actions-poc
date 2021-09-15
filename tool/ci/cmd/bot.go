@@ -87,6 +87,8 @@ func triggerAssign(ctx context.Context, token string) error {
 	}
 	for _, w := range workflows.Workflows {
 		log.Println(*w.Name)
+		log.Println(*w.Path)
+		log.Println(*w.ID)
 
 	}
 	resp, err := clt.Actions.CreateWorkflowDispatchEventByFileName(ctx, metadata[0], metadata[1], "assign-target", github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
