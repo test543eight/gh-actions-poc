@@ -95,11 +95,17 @@ func triggerAssign(ctx context.Context, token string) error {
 		}
 
 	}
-	resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
+	pulls, _, err := clt.PullRequests.List(ctx, metadata[0], metadata[1], &github.PullRequestListOptions{State: ci.Open})
 	if err != nil {
 		return err
 	}
-	log.Printf("%+v", resp)
+	for _, pull := range pulls {
+		resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: *pull.Head.SHA})
+		if err != nil {
+			return err
+		}
+		log.Printf("%+v", resp)
+	}
 	return nil
 }
 
