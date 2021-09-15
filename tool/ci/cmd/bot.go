@@ -72,6 +72,7 @@ func main() {
 }
 
 func triggerAssign(ctx context.Context, token string) error {
+	var assignTarget *github.Workflow
 	clt := makeGithubClient(ctx, token)
 	repository := os.Getenv(ci.GithubRepository)
 	if repository == "" {
@@ -89,9 +90,12 @@ func triggerAssign(ctx context.Context, token string) error {
 		log.Println(*w.Name)
 		log.Println(*w.Path)
 		log.Println(*w.ID)
+		if *w.Name == "Assign-Target" {
+			assignTarget = w
+		}
 
 	}
-	resp, err := clt.Actions.CreateWorkflowDispatchEventByFileName(ctx, metadata[0], metadata[1], "assign-target", github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
+	resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
 	if err != nil {
 		return err
 	}
