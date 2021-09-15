@@ -21,6 +21,7 @@ type Config struct {
 	EventPath     string
 	Token         string
 	unmarshalRevs unmarshalReviewersFn
+	PullRequest   *PullRequestMetadata
 }
 
 // Environment contains information about the environment
@@ -56,8 +57,8 @@ func (c *Config) CheckAndSetDefaults() error {
 	if c.Reviewers == "" {
 		return trace.BadParameter("missing parameter Reviewers")
 	}
-	if c.EventPath == "" {
-		return trace.BadParameter("missing parameter EventPath")
+	if c.EventPath == "" && c.PullRequest == nil {
+		return trace.BadParameter("config needs PullRequest or EventPath")
 	}
 	if c.Token == "" {
 		return trace.BadParameter("missing parameter token")
@@ -70,6 +71,7 @@ func (c *Config) CheckAndSetDefaults() error {
 
 // New creates a new instance of Environment.
 func New(c Config) (*Environment, error) {
+	var pr *PullRequestMetadata
 	err := c.CheckAndSetDefaults()
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -78,9 +80,13 @@ func New(c Config) (*Environment, error) {
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	pr, err := GetPullRequest(c.EventPath)
-	if err != nil {
-		return nil, trace.Wrap(err)
+	if c.PullRequest == nil {
+		pr, err = GetPullRequest(c.EventPath)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+	} else {
+		pr = c.PullRequest
 	}
 	return &Environment{
 		Client:           c.Client,

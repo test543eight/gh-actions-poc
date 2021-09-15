@@ -39,7 +39,7 @@ func main() {
 		log.Print("Assign completed")
 	case "assign-reviewers-ex":
 		log.Println("Assigning for external")
-		err := triggerAssign(ctx, *token)
+		err := triggerAssign(ctx, *token, *reviewers)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,8 +71,8 @@ func main() {
 
 }
 
-func triggerAssign(ctx context.Context, token string) error {
-	var assignTarget *github.Workflow
+func triggerAssign(ctx context.Context, token, revs string) error {
+	// var assignTarget *github.Workflow
 	clt := makeGithubClient(ctx, token)
 	repository := os.Getenv(ci.GithubRepository)
 	if repository == "" {
@@ -90,9 +90,9 @@ func triggerAssign(ctx context.Context, token string) error {
 		log.Println(*w.Name)
 		log.Println(*w.Path)
 		log.Println(*w.ID)
-		if *w.Name == "Assign-Target" {
-			assignTarget = w
-		}
+		// if *w.Name == "Assign-Target" {
+		// 	//assignTarget = w
+		// }
 
 	}
 	pulls, _, err := clt.PullRequests.List(ctx, metadata[0], metadata[1], &github.PullRequestListOptions{State: ci.Open})
@@ -100,13 +100,47 @@ func triggerAssign(ctx context.Context, token string) error {
 		return err
 	}
 	for _, pull := range pulls {
-		resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: *pull.Head.SHA})
+		env, err := createEnv(ctx, pull, token, revs)
 		if err != nil {
 			return err
 		}
-		log.Printf("%+v", resp)
+		bot, err := bots.New(bots.Config{Environment: env})
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		err = bot.Assign(ctx)
+		if err != nil {
+			return err
+		}
+		// resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: *pull.Head.SHA})
+		// if err != nil {
+		// 	return err
+		// }
+		// log.Printf("%+v", resp)
 	}
 	return nil
+}
+
+func createEnv(ctx context.Context, pr *github.PullRequest, token, revs string) (*environment.Environment, error) {
+	pull := &environment.PullRequestMetadata{
+		Author:     *pr.User.Login,
+		Number:     *pr.Number,
+		RepoName:   *pr.Base.Repo.Name,
+		RepoOwner:  *pr.Base.User.Login,
+		HeadSHA:    *pr.Head.SHA,
+		BaseSHA:    *pr.Base.SHA,
+		BranchName: *pr.Head.Ref,
+	}
+	env, err := environment.New(environment.Config{
+		PullRequest: pull,
+		Client:      makeGithubClient(ctx, token),
+		Reviewers:   revs,
+		Token:       token,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return env, nil
 }
 
 func constructBot(ctx context.Context, token, reviewers string) (*bots.Bot, error) {
