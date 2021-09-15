@@ -1,11 +1,11 @@
-name: Assign
+name: Assign-External
 on: 
   schedule:
     # Runs every 5 minutes
     - cron:  '* * * * *' 
 jobs:
   auto-request-review:
-    name: Auto Request Review
+    name: Auto Request Review Ext
     if: ${{ github.event.pull_request.head.repo.full_name != 'gravitational/gh-actions-poc' }}
     runs-on: ubuntu-latest
     steps:
