@@ -4,7 +4,7 @@
 # NOTE: Due to the sensitive nature of this workflow, it must always be run
 # against master AND with minimal permissions. These properties must always
 # be maintained!
-name: Check
+name: Check-Target
 on: 
   pull_request_review:
     type: [submitted, edited, dismissed]
