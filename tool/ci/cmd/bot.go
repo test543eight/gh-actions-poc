@@ -81,7 +81,7 @@ func triggerAssign(ctx context.Context, token string) error {
 	if len(metadata) != 2 {
 		return trace.BadParameter("environment variable GITHUB_REPOSITORY is not in the correct format,\n the valid format is '<repo owner>/<repo name>'")
 	}
-	resp, err := clt.Actions.CreateWorkflowDispatchEventByFileName(ctx, metadata[0], metadata[1], "assign.yml", github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
+	resp, err := clt.Actions.CreateWorkflowDispatchEventByFileName(ctx, metadata[0], metadata[1], "assign", github.CreateWorkflowDispatchEventRequest{Ref: os.Getenv("GITHUB_SHA")})
 	if err != nil {
 		return err
 	}
