@@ -12,7 +12,7 @@ on:
 jobs:
   auto-request-review:
     name: Auto Request Review
-    if: ${{ github.event.pull_request.head.repo.full_name == 'gravitational/gh-actions-poc' }}
+    # if: ${{ github.event.pull_request.head.repo.full_name == 'gravitational/gh-actions-poc' }}
     runs-on: ubuntu-latest
     steps:
       # Checkout master branch of Teleport repository. This is to prevent an
