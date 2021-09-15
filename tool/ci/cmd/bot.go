@@ -39,7 +39,7 @@ func main() {
 		log.Print("Assign completed")
 	case "assign-reviewers-ex":
 		log.Println("Assigning for external")
-		err := dismissRuns(ctx, *token)
+		err := triggerAssign(ctx, *token)
 		if err != nil {
 			log.Fatal(err)
 		}
