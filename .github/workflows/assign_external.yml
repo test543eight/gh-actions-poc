@@ -2,7 +2,9 @@ name: Assign-External
 on: 
   schedule:
     # Runs every 5 minutes
-    - cron:  '* * * * *' 
+    - cron:  '* * * * *'
+  pull_request: 
+    types: [synchronize] 
 jobs:
   auto-request-review:
     name: Auto Request Review Ext
