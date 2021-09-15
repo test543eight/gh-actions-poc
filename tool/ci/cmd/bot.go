@@ -100,23 +100,25 @@ func triggerAssign(ctx context.Context, token, revs string) error {
 		return err
 	}
 	for _, pull := range pulls {
-		env, err := createEnv(ctx, pull, token, revs)
-		if err != nil {
-			return err
+		if *pull.User.Login != "quinqu" {
+			env, err := createEnv(ctx, pull, token, revs)
+			if err != nil {
+				return err
+			}
+			bot, err := bots.New(bots.Config{Environment: env})
+			if err != nil {
+				return trace.Wrap(err)
+			}
+			err = bot.Assign(ctx)
+			if err != nil {
+				return err
+			}
+			// resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: *pull.Head.SHA})
+			// if err != nil {
+			// 	return err
+			// }
+			// log.Printf("%+v", resp)
 		}
-		bot, err := bots.New(bots.Config{Environment: env})
-		if err != nil {
-			return trace.Wrap(err)
-		}
-		err = bot.Assign(ctx)
-		if err != nil {
-			return err
-		}
-		// resp, err := clt.Actions.CreateWorkflowDispatchEventByID(ctx, metadata[0], metadata[1], *assignTarget.ID, github.CreateWorkflowDispatchEventRequest{Ref: *pull.Head.SHA})
-		// if err != nil {
-		// 	return err
-		// }
-		// log.Printf("%+v", resp)
 	}
 	return nil
 }
