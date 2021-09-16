@@ -1,0 +1,11 @@
+on: [pull_request]
+
+jobs:
+  foo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.16.4'
+      - run: "cat /sys/kernel/btf/vmlinux"
