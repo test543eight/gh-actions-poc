@@ -10,7 +10,6 @@ import (
 
 	"github.com/gravitational/gh-actions-poc/tool/ci"
 	"github.com/gravitational/gh-actions-poc/tool/ci/pkg/environment"
-	"github.com/sirupsen/logrus"
 
 	"github.com/google/go-github/v37/github"
 	"github.com/gravitational/trace"
@@ -20,25 +19,95 @@ import (
 func (c *Bot) Check(ctx context.Context) error {
 	env := c.Environment
 	pr := c.Environment.PullRequest
-	logrus.Printf("Checking reviewers for %s", pr.Author)
+	// Remove any stale workflow runs. As only the current workflow run should
+	// be shown because it is the workflow that reflects the correct state of the pull.
+	//
+	// Note: This is run for all workflow runs triggered by an event from an internal contributor,
+	// but has to be run again in cron workflow because workflows triggered by external contributors do not
+	// grant the Github actions token the correct permissions to dismiss workflow runs.
 	if c.Environment.IsInternal(pr.Author) {
 		err := c.GithubClient.DismissStaleWorkflowRuns(ctx, env.GetToken(), pr.RepoOwner, pr.RepoName, pr.BranchName)
 		if err != nil {
 			return trace.Wrap(err)
 		}
 	}
+	// Check if the assigned reviewers have approved this PR.
+	err := c.check(ctx)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
+}
+
+// check checks to see if all the required reviewers have approved and invalidates
+// approvals for external contributors if a new commit is pushed
+func (c *Bot) check(ctx context.Context) error {
+	pr := c.Environment.PullRequest
+	mostRecentReviews, err := c.getReviews(ctx)
+	if err != nil {
+		return err
+	}
+	if len(mostRecentReviews) == 0 {
+		return trace.BadParameter("pull request has no reviews")
+	}
+	log.Printf("Checking if %v has approvals from the required reviewers %+v", pr.Author, c.Environment.GetReviewersForAuthor(pr.Author))
+	err = approved(mostRecentReviews, c.Environment.GetReviewersForAuthor(pr.Author))
+	if err != nil {
+		return err
+	}
+	// For external contributors, invalidate all approvals if new commits have
+	// been pushed since reviewers approved the PR.
+	if hasNewCommit(pr.HeadSHA, mostRecentReviews) && !c.Environment.IsInternal(pr.Author) {
+		err := c.verifyCommit(ctx)
+		if err != nil {
+			if validationErr := c.invalidateApprovals(ctx, dismissMessage(pr, c.Environment.GetReviewersForAuthor(pr.Author)), mostRecentReviews); validationErr != nil {
+				return trace.Wrap(validationErr)
+			}
+			return trace.Wrap(err)
+		}
+	}
+	return nil
+}
+
+func approved(mostRecentReviews []review, required []string) error {
+	var waitingOnApprovalsFrom []string
+	for _, requiredReviewer := range required {
+		reviewer, ok := hasApproved(requiredReviewer, mostRecentReviews)
+		if !ok {
+			waitingOnApprovalsFrom = append(waitingOnApprovalsFrom, reviewer)
+		}
+	}
+	switch {
+	case len(waitingOnApprovalsFrom) == 1:
+		return trace.BadParameter(fmt.Sprintf("required reviewers have not yet approved, waiting on an approval from %s",
+			strings.Join(waitingOnApprovalsFrom, "")))
+	case len(waitingOnApprovalsFrom) == 2:
+		return trace.BadParameter(fmt.Sprintf("required reviewers have not yet approved, waiting for approvals from %s",
+			strings.Join(waitingOnApprovalsFrom, " and ")))
+	case len(waitingOnApprovalsFrom) > 2:
+		lastReviewer := waitingOnApprovalsFrom[len(waitingOnApprovalsFrom)-1]
+		waitingOnApprovalsFrom = waitingOnApprovalsFrom[:len(waitingOnApprovalsFrom)-1]
+		return trace.BadParameter(fmt.Sprintf("required reviewers have not yet approved, waiting for approvals from %s, and %s",
+			strings.Join(waitingOnApprovalsFrom, ", "), lastReviewer))
+	}
+	return nil
+}
+
+func (c *Bot) getReviews(ctx context.Context) ([]review, error) {
+	env := c.Environment
+	pr := c.Environment.PullRequest
 	reviews, _, err := env.Client.PullRequests.ListReviews(ctx, pr.RepoOwner,
 		pr.RepoName,
 		pr.Number,
 		&github.ListOptions{})
 	if err != nil {
-		return trace.Wrap(err)
+		return []review{}, trace.Wrap(err)
 	}
 	currentReviewsSlice := []review{}
 	for _, rev := range reviews {
 		err := checkReviewFields(rev)
 		if err != nil {
-			return trace.Wrap(err)
+			return []review{}, trace.Wrap(err)
 		}
 		currReview := review{
 			name:        *rev.User.Login,
@@ -49,40 +118,35 @@ func (c *Bot) Check(ctx context.Context) error {
 		}
 		currentReviewsSlice = append(currentReviewsSlice, currReview)
 	}
-	recentReviews := mostRecent(currentReviewsSlice)
-	err = c.check(ctx, pr, c.Environment.GetReviewersForAuthor(pr.Author), recentReviews)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	if hasNewCommit(pr.HeadSHA, recentReviews) && !c.Environment.IsInternal(pr.Author) {
-		// Check file changes/commit verification
-		err := c.verifyCommit(ctx)
-		if err != nil {
-			if validationErr := c.invalidateApprovals(ctx, dismissMessage(pr, c.Environment.GetReviewersForAuthor(pr.Author)), currentReviewsSlice); validationErr != nil {
-				return trace.Wrap(validationErr)
-			}
-			return trace.Wrap(err)
-		}
+	return mostRecent(currentReviewsSlice), nil
+}
+
+// review is a pull request review
+type review struct {
+	name        string
+	status      string
+	commitID    string
+	id          int64
+	submittedAt *time.Time
+}
+
+func checkReviewFields(review *github.PullRequestReview) error {
+	switch {
+	case review.ID == nil:
+		return trace.Errorf("review ID is nil. review: %+v", review)
+	case review.State == nil:
+		return trace.Errorf("review State is nil. review: %+v", review)
+	case review.CommitID == nil:
+		return trace.Errorf("review CommitID is nil. review: %+v", review)
+	case review.SubmittedAt == nil:
+		return trace.Errorf("review SubmittedAt is nil. review: %+v", review)
+	case review.User.Login == nil:
+		return trace.Errorf("reviewer User.Login is nil. review: %+v", review)
 	}
 	return nil
 }
 
-// check checks to see if all the required reviewers have approved and invalidates
-// approvals for external contributors if a new commit is pushed
-func (c *Bot) check(ctx context.Context, pr *environment.PullRequestMetadata, required []string, currentReviews []review) error {
-	if len(currentReviews) == 0 {
-		return trace.BadParameter("pull request has no reviews")
-	}
-	log.Printf("Checking if %v has approvals from the required reviewers %+v", pr.Author, required)
-	for _, requiredReviewer := range required {
-		if !containsApprovalReview(requiredReviewer, currentReviews) {
-			return trace.BadParameter("required reviewers have not yet approved")
-		}
-	}
-	return nil
-}
-
-// mostRecent returns a list of the most recent review from each required reviewer
+// mostRecent returns a list of the most recent review from each required reviewer.
 func mostRecent(currentReviews []review) []review {
 	mostRecentReviews := make(map[string]review)
 	for _, rev := range currentReviews {
@@ -104,38 +168,13 @@ func mostRecent(currentReviews []review) []review {
 	return reviews
 }
 
-func checkReviewFields(review *github.PullRequestReview) error {
-	switch {
-	case review.ID == nil:
-		return trace.Errorf("review ID is nil. review: %+v", review)
-	case review.State == nil:
-		return trace.Errorf("review State is nil. review: %+v", review)
-	case review.CommitID == nil:
-		return trace.Errorf("review CommitID is nil. review: %+v", review)
-	case review.SubmittedAt == nil:
-		return trace.Errorf("review SubmittedAt is nil. review: %+v", review)
-	case review.User.Login == nil:
-		return trace.Errorf("reviewer User.Login is nil. review: %+v", review)
-	}
-	return nil
-}
-
-// review is a pull request review
-type review struct {
-	name        string
-	status      string
-	commitID    string
-	id          int64
-	submittedAt *time.Time
-}
-
-func containsApprovalReview(reviewer string, reviews []review) bool {
+func hasApproved(reviewer string, reviews []review) (string, bool) {
 	for _, rev := range reviews {
 		if rev.name == reviewer && rev.status == ci.Approved {
-			return true
+			return "", true
 		}
 	}
-	return false
+	return reviewer, false
 }
 
 // dimissMessage returns the dimiss message when a review is dismissed
@@ -143,7 +182,7 @@ func dismissMessage(pr *environment.PullRequestMetadata, required []string) stri
 	var buffer bytes.Buffer
 	buffer.WriteString("new commit pushed, please re-review ")
 	for _, reviewer := range required {
-		buffer.WriteString(fmt.Sprintf("@%v ", reviewer))
+		fmt.Fprintf(&buffer, "@%v", reviewer)
 	}
 	return buffer.String()
 }
@@ -151,7 +190,6 @@ func dismissMessage(pr *environment.PullRequestMetadata, required []string) stri
 // hasNewCommit sees if the pull request has a new commit
 // by comparing commits after the push event
 func hasNewCommit(headSHA string, revs []review) bool {
-	log.Printf("%+v", revs)
 	for _, v := range revs {
 		if v.commitID != headSHA {
 			return true
@@ -180,15 +218,36 @@ func (c *Bot) verifyCommit(ctx context.Context) error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
-
 	verification := commit.Commit.Verification
 	if verification != nil {
 		if verification.Payload != nil && verification.Verified != nil {
 			payload := *verification.Payload
+			// If commit is empty (no file changes) and the commit is signed by Github,
+			// there is no need to invalidate the commit.
 			if strings.Contains(payload, ci.GithubCommit) && *verification.Verified {
 				return nil
 			}
 		}
 	}
 	return trace.BadParameter("commit is not verified and/or is not signed by GitHub")
+}
+
+// invalidateApprovals dismisses all approved reviews on a pull request.
+func (c *Bot) invalidateApprovals(ctx context.Context, msg string, reviews []review) error {
+	pr := c.Environment.PullRequest
+	for _, v := range reviews {
+		if v.status == ci.Approved {
+			_, _, err := c.Environment.Client.PullRequests.DismissReview(ctx,
+				pr.RepoOwner,
+				pr.RepoName,
+				pr.Number,
+				v.id,
+				&github.PullRequestReviewDismissalRequest{Message: &msg},
+			)
+			if err != nil {
+				return trace.Wrap(err)
+			}
+		}
+	}
+	return nil
 }

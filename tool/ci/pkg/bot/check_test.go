@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"context"
 	"testing"
 
 	"github.com/gravitational/gh-actions-poc/tool/ci/pkg/environment"
@@ -9,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCheck(t *testing.T) {
+func TestApproved(t *testing.T) {
 	bot := &Bot{Environment: &environment.Environment{}}
 	pull := &environment.PullRequestMetadata{Author: "test"}
 	tests := []struct {
@@ -59,7 +58,7 @@ func TestCheck(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			err := test.botInstance.check(context.TODO(), test.pr, test.required, test.currentReviews)
+			err := approved(test.currentReviews, test.required)
 			test.checkErr(t, err)
 		})
 	}
@@ -72,15 +71,15 @@ func TestContainsApprovalReview(t *testing.T) {
 		{name: "baz", status: "APPROVED", commitID: "ba0d35", id: 1},
 	}
 	// Has a review but no approval
-	ok := containsApprovalReview("bar", reviews)
+	_, ok := hasApproved("bar", reviews)
 	require.Equal(t, false, ok)
 
 	// Does not have revire from reviewer
-	ok = containsApprovalReview("car", reviews)
+	_, ok = hasApproved("car", reviews)
 	require.Equal(t, false, ok)
 
 	// Has review and is approved
-	ok = containsApprovalReview("foo", reviews)
+	_, ok = hasApproved("foo", reviews)
 	require.Equal(t, true, ok)
 }
 

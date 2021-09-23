@@ -3,7 +3,8 @@ package bot
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"net/url"
+	"path"
 
 	"sort"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/gravitational/trace"
 
 	"github.com/google/go-github/v37/github"
-	log "github.com/sirupsen/logrus"
 )
 
 // Config is used to configure Bot
@@ -25,6 +25,10 @@ type Bot struct {
 	Environment  *environment.Environment
 	GithubClient GithubClient
 }
+
+// GithubClient is a wrapper around the Github client
+// to be used on methods that require the client, but don't
+// don't need the functionality of Bot.
 type GithubClient struct {
 	Client *github.Client
 }
@@ -51,27 +55,6 @@ func (c *Config) CheckAndSetDefaults() error {
 	return nil
 }
 
-// invalidateApprovals dismisses all reviews on a pull request
-func (c *Bot) invalidateApprovals(ctx context.Context, msg string, reviews []review) error {
-	pr := c.Environment.PullRequest
-	for _, v := range reviews {
-		log.Println("%+v", v)
-		if v.status == ci.Approved {
-			_, _, err := c.Environment.Client.PullRequests.DismissReview(ctx,
-				pr.RepoOwner,
-				pr.RepoName,
-				pr.Number,
-				v.id,
-				&github.PullRequestReviewDismissalRequest{Message: &msg},
-			)
-			if err != nil {
-				return trace.Wrap(err)
-			}
-		}
-	}
-	return nil
-}
-
 // DimissStaleWorkflowRunsForExternalContributors dismisses stale workflow runs for external contributors
 func (gc GithubClient) DimissStaleWorkflowRunsForExternalContributors(ctx context.Context, token, repoOwner, repoName string) error {
 	pulls, _, err := gc.Client.PullRequests.List(ctx, repoOwner, repoName, &github.PullRequestListOptions{State: ci.Open})
@@ -88,11 +71,12 @@ func (gc GithubClient) DimissStaleWorkflowRunsForExternalContributors(ctx contex
 }
 
 // DismissStaleWorkflowRuns dismisses stale Check workflow runs.
-// Stale workflow runs are workflow runs that were previously ran/not the most recent and are no longer valid
-// due to a new event triggering/change in state. The workflow in the current context is the source of truth for
-// the state of the pull request.
+// Stale workflow runs are workflow runs that were previously ran and are no longer valid
+// due to a new event triggering thus a change in state. The workflow running in the current context is the source of truth for
+// the state of checks.
 func (gc GithubClient) DismissStaleWorkflowRuns(ctx context.Context, token, owner, repoName, branch string) error {
 	var targetWorkflow *github.Workflow
+	var workflowRuns []*github.WorkflowRun
 	workflows, _, err := gc.Client.Actions.ListWorkflows(ctx, owner, repoName, &github.ListOptions{})
 	if err != nil {
 		return trace.Wrap(err)
@@ -107,10 +91,13 @@ func (gc GithubClient) DismissStaleWorkflowRuns(ctx context.Context, token, owne
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	sort.Sort(ByTime(list.WorkflowRuns))
-
-	// Deleting all runs except the most recently started one.
-	for i := 0; i < len(list.WorkflowRuns)-1; i++ {
+	workflowRuns = list.WorkflowRuns
+	sort.Slice(workflowRuns, func(i, j int) bool {
+		time1, time2 := workflowRuns[i].CreatedAt, workflowRuns[j].CreatedAt
+		return time1.Time.Before(time2.Time)
+	})
+	// Deleting all runs except the most recent one.
+	for i := 0; i < len(workflowRuns)-1; i++ {
 		run := list.WorkflowRuns[i]
 		err := gc.deleteRun(ctx, token, owner, repoName, *run.ID)
 		if err != nil {
@@ -120,39 +107,32 @@ func (gc GithubClient) DismissStaleWorkflowRuns(ctx context.Context, token, owne
 	return nil
 }
 
+const (
+	// GithubAPIHostname is the Github API hostname.
+	GithubAPIHostname = "api.github.com"
+	// Scheme is the protocol scheme used when making
+	// a request to delete a workflow run to the Github API.
+	Scheme = "https"
+)
+
 // deleteRun deletes a workflow run.
 // Note: the go-github client library does not support this endpoint.
 func (gc GithubClient) deleteRun(ctx context.Context, token, owner, repo string, runID int64) error {
 	// Construct url
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/runs/%v", owner, repo, runID)
-	req, err := gc.Client.NewRequest("DELETE", url, nil)
+	s := fmt.Sprintf("repos/%s/%s/actions/runs/%v", owner, repo, runID)
+	cleanPath := path.Join("/", s)
+	url := url.URL{
+		Scheme: Scheme,
+		Host:   GithubAPIHostname,
+		Path:   cleanPath,
+	}
+	req, err := gc.Client.NewRequest("DELETE", url.String(), nil)
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	resp, err := gc.Client.Do(ctx, req, nil)
+	_, err = gc.Client.Do(ctx, req, nil)
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	log.Println(string(bodyBytes))
 	return nil
-}
-
-type ByTime []*github.WorkflowRun
-
-func (s ByTime) Len() int {
-	return len(s)
-}
-
-func (s ByTime) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s ByTime) Less(i, j int) bool {
-	time1, time2 := s[i].CreatedAt, s[j].CreatedAt
-	return time1.Time.Before(time2.Time)
 }
