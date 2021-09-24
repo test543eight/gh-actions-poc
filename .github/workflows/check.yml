@@ -9,7 +9,7 @@ on:
   pull_request_review:
     type: [submitted, edited, dismissed]
 
-  pull_request: 
+  pull_request_target: 
     types: [assigned, opened, reopened, ready_for_review, synchronize]
 
 jobs: 
