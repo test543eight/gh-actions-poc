@@ -52,7 +52,7 @@ func TestNewEnvironment(t *testing.T) {
 			checkErr: require.NoError,
 			desc:     "valid Environment config",
 			expected: &Environment{
-				reviewers:        map[string][]string{"foo": {"bar", "baz"}, "": {"admin"}},
+				Reviewers:        map[string][]string{"foo": {"bar", "baz"}, "": {"admin"}},
 				Client:           github.NewClient(nil),
 				PullRequest:      pr,
 				defaultReviewers: []string{"admin"},
@@ -69,7 +69,7 @@ func TestNewEnvironment(t *testing.T) {
 			checkErr: require.NoError,
 			desc:     "valid Environment config",
 			expected: &Environment{
-				reviewers:        map[string][]string{"foo": {"bar", "baz"}, "": {"admin"}},
+				Reviewers:        map[string][]string{"foo": {"bar", "baz"}, "": {"admin"}},
 				Client:           github.NewClient(nil),
 				PullRequest:      pr,
 				defaultReviewers: []string{"admin"},

@@ -44,7 +44,7 @@ type Environment struct {
 	// reviewers is a map of reviewers where the key
 	// is the user name of the author and the value is a list
 	// of required reviewers.
-	reviewers map[string][]string
+	Reviewers map[string][]string
 	// defaultReviewers is a list of reviewers used for authors whose
 	// usernames are not a key in `reviewers`
 	defaultReviewers []string
@@ -117,7 +117,7 @@ func New(c Config) (*Environment, error) {
 	}
 	return &Environment{
 		Client:           c.Client,
-		reviewers:        revs,
+		Reviewers:        revs,
 		defaultReviewers: revs[""],
 		PullRequest:      pr,
 	}, nil
@@ -169,7 +169,7 @@ func userExists(ctx context.Context, userLogin string, client *github.Client) (*
 
 // GetReviewersForAuthor gets the required reviewers for the current user.
 func (e *Environment) GetReviewersForAuthor(user string) []string {
-	value, ok := e.reviewers[user]
+	value, ok := e.Reviewers[user]
 	// author is external or does not have set reviewers
 	if !ok {
 		return e.defaultReviewers
@@ -179,7 +179,7 @@ func (e *Environment) GetReviewersForAuthor(user string) []string {
 
 // IsInternal determines if an author is an internal contributor.
 func (e *Environment) IsInternal(author string) bool {
-	_, ok := e.reviewers[author]
+	_, ok := e.Reviewers[author]
 	return ok
 }
 
