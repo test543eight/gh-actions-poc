@@ -44,6 +44,7 @@ func main() {
 		}
 		err = bot.Assign(ctx)
 		if err != nil {
+			panic("assign error")
 			log.Fatal(err)
 		}
 		log.Print("Assign completed.")
