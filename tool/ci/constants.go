@@ -4,11 +4,6 @@ const (
 	// AssignSubcommand is the subcommand to assign reviewers
 	AssignSubcommand = "assign-reviewers"
 
-	//AssignExternalSubcommand is the subcommand to assign reviewers to external
-	// contributors pull requests 
-	AssignExternalSubcommand = "assign-reviewers-external"
-
-
 	// CheckSubcommand is the subcommand to check reviewers
 	CheckSubcommand = "check-reviewers"
 

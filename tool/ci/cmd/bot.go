@@ -58,13 +58,6 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Print("Check completed.")
-	case ci.AssignExternalSubcommand:
-		log.Println("Assigning reviewers for external contributors.")
-		err := assignExternal(ctx, *token)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println("Assigning for external completed.")
 	case ci.Dismiss:
 		log.Println("Dismissing stale runs.")
 		err := dismissRuns(ctx, *token)
@@ -76,33 +69,6 @@ func main() {
 		log.Fatalf("Unknown subcommand: %v.\n%s", subcommand, usage)
 	}
 
-}
-
-func assignExternal(ctx context.Context, token string) error {
-	clt := makeGithubClient(ctx, token)
-	repository := os.Getenv(ci.GithubRepository)
-	if repository == "" {
-		return trace.BadParameter("environment variable GITHUB_REPOSITORY is not set")
-	}
-	metadata := strings.Split(repository, "/")
-	if len(metadata) != 2 {
-		return trace.BadParameter("environment variable GITHUB_REPOSITORY is not in the correct format,\n the valid format is '<repo owner>/<repo name>'")
-	}
-
-	pulls, err := getPulls(ctx, clt, metadata[0], metadata[1])
-	if err != nil {
-		return err 
-	}
-	for _, pull := range pulls {
-		// Create new bot for each pull 
-		env := &environment.Environment{Client: clt, PullRequest: pull, Reviewers: map[string][]string{"": {"quinqu"}}}
-		bot := &bots.Bot{Environment: env}
-		err := bot.Assign(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func constructBot(ctx context.Context, token, reviewers string) (*bots.Bot, error) {
@@ -124,38 +90,6 @@ func constructBot(ctx context.Context, token, reviewers string) (*bots.Bot, erro
 	return bot, nil
 }
 
-func getPulls(ctx context.Context, gc *github.Client, repoOwner, repoName string) ([]*environment.PullRequestMetadata, error) {
-	var pullRequests []*environment.PullRequestMetadata
-	pulls, _, err := gc.PullRequests.List(ctx, repoOwner, repoName, &github.PullRequestListOptions{State: ci.Open})
-	if err != nil {
-		return nil, err
-	}
-	for _, p := range pulls {
-		prMetadata, err := toPullRequestMetadata(p)
-		if err != nil {
-			return nil, err
-		}
-		pullRequests = append(pullRequests, prMetadata)
-	}
-	return pullRequests, nil 
-}
-
-func toPullRequestMetadata(pull *github.PullRequest) (*environment.PullRequestMetadata, error) {
-	switch {
-	case pull.User.Name == nil:
-		// TODO check fields 
-	}
-
-	return &environment.PullRequestMetadata{
-		Author:     *pull.User.Name,
-		Number:     *pull.Number,
-		RepoName:   *pull.Base.Repo.Name,
-		RepoOwner:  *pull.Base.User.Name,
-		HeadSHA:    *pull.Head.SHA,
-		BaseSHA:    *pull.Base.SHA,
-		BranchName: *pull.Head.Ref,
-	}, nil
-}
 func dismissRuns(ctx context.Context, token string) error {
 	repository := os.Getenv(ci.GithubRepository)
 	if repository == "" {
