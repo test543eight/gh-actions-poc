@@ -6,13 +6,12 @@
 # be maintained!
 name: Assign
 on: 
-  pull_request:
+  pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
 
 jobs:
   auto-request-review:
     name: Auto Request Review
-    if: ${{ github.event.pull_request.head.repo.full_name == 'gravitational/gh-actions-poc' }}
     runs-on: ubuntu-latest
     steps:
       - name: Event name 
