@@ -30,3 +30,4 @@ jobs:
         # Run "check-reviewers" subcommand on bot.
       - name: Checking reviewers
         run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers
+#

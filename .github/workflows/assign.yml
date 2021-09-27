@@ -28,4 +28,4 @@ jobs:
       - name: Assigning reviewers 
         run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }}  --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" assign-reviewers
 
-      
+      #
