@@ -6,11 +6,11 @@
 # be maintained!
 name: Assign
 on: 
-  pull_request:
+  pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:

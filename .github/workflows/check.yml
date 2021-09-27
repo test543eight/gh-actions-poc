@@ -11,10 +11,7 @@ on:
 
   pull_request: 
     types: [assigned, opened, reopened, ready_for_review, synchronize]
-permissions:
-  contents: read
-  pull-requests: write
-  
+
 jobs: 
   check-reviews:
     name: Checking reviewers 
