@@ -9,4 +9,5 @@ jobs:
    runs-on: [ubuntu-latest]
    steps:
      - name: say hello
-       run: echo "hello"
+       run: cat $GITHUB_EVENT_PATH
+     
