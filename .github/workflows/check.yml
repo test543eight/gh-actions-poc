@@ -8,14 +8,15 @@ name: Check
 on: 
   pull_request_review:
     type: [submitted, edited, dismissed]
-
   pull_request_target: 
     types: [assigned, opened, reopened, ready_for_review, synchronize]
-
+  issue_comment:                                     
+    types: [created, edited, deleted]
 jobs: 
   check-reviews:
     name: Checking reviewers 
     runs-on: ubuntu-latest
+    if: ${{ github.event.issue.pull_request }}
     steps:
       - name: Event name 
         run: echo ${{ github.event_name }}

@@ -8,10 +8,13 @@ name: Assign
 on: 
   pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
+  issue_comment:                                     
+    types: [created, edited, deleted]
 jobs:
   auto-request-review:
     name: Auto Request Review
     runs-on: ubuntu-latest
+    if: ${{ github.event.issue.pull_request }}
     steps:
       - name: Event name 
         run: echo ${{ github.event_name}}
