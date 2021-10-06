@@ -16,7 +16,7 @@ jobs:
   check-reviews:
     name: Checking reviewers 
     runs-on: ubuntu-latest
-    if: ${{ github.event.issue.pull_request }}
+    if: ${{ github.event.issue.pull_request || github.event.pull_request || github.event.pull_request_review }}
     steps:
       - name: Event name 
         run: echo ${{ github.event_name }}
