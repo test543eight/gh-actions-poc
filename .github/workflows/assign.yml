@@ -8,7 +8,7 @@ name: Assign
 on: 
   pull_request_target:
     types: [assigned, opened, reopened, ready_for_review]
-    
+
 permissions:  
     pull-requests: write
 jobs:
@@ -29,6 +29,6 @@ jobs:
 
       # Run "assign-reviewers" subcommand on bot.
       - name: Assigning reviewers 
-        run: cd .github/workflows && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }}  --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" assign-reviewers
+        run: cd .github/workflows && go run cmd/main.go --token=${{ secrets.GITHUB_TOKEN }}  --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" assign-reviewers
 
       
