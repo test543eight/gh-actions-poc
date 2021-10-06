@@ -16,7 +16,6 @@ jobs:
   check-reviews:
     name: Checking reviewers 
     runs-on: ubuntu-latest
-    if: ${{ github.event.issue.pull_request || github.event.pull_request || github.event.pull_request_review }}
     steps:
       - name: Event name 
         run: echo ${{ github.event_name }}
@@ -28,8 +27,6 @@ jobs:
           ref: dev-workflow 
       - name: Installing the latest version of Go.
         uses: actions/setup-go@v2
-      - name: Checking for run approval 
-        run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }}  --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-run-approval
         # Run "check-reviewers" subcommand on bot.
       - name: Checking reviewers
         run: cd tool/ci && go run cmd/bot.go --token=${{ secrets.GITHUB_TOKEN }} --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers
