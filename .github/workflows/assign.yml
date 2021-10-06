@@ -10,7 +10,7 @@ on:
     types: [assigned, opened, reopened, ready_for_review]
 
 permissions:  
-    pull-requests: write
+    pull-requests: none
 jobs:
   auto-request-review:
     name: Auto Request Review
