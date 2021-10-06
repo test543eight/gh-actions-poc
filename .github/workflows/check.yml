@@ -27,4 +27,4 @@ jobs:
         uses: actions/setup-go@v2
         # Run "check-reviewers" subcommand on bot.
       - name: Checking reviewers
-        run: cd .github/workflows && go run cmd/main.go --token=${{ secrets.GITHUB_TOKEN }} --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers
+        run: cd .github/workflows/ci && go run cmd/main.go --token=${{ secrets.GITHUB_TOKEN }} --reviewers="{\"\":[\"quinqu\"], \"quinqu\":[\"0xblush\"]}" check-reviewers
