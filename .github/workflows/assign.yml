@@ -10,7 +10,16 @@ on:
     types: [assigned, opened, reopened, ready_for_review]
 
 permissions:  
-    pull-requests: write
+    pull-requests: none
+    actions: none
+    checks: none
+    contents: none
+    deployments: none
+    issues: none
+    packages: none
+    repository-projects: none
+    security-events: none
+    statuses: none
 jobs:
   auto-request-review:
     name: Auto Request Review
