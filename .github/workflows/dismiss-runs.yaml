@@ -3,7 +3,10 @@ on:
   schedule:
     # Runs every 5 minutes
     - cron:  '* * * * *' 
-
+permissions: 
+  actions: write 
+  pull-requests: read
+  
 jobs: 
   dismiss-stale-runs:
     name: Dismiss Stale Workflow Runs
