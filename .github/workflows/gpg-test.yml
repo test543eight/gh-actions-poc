@@ -22,13 +22,7 @@ jobs:
         run: gpg --import github.pgp 
       - name: rm key file 
         run: rm github.pgp
-      - name: ls 
-        run: ls .github/workflows/
-      - name: check for temp dir 
-        run: ls /tmp
-      - name: cd and go get
-        run: cd .github/workflows/cmd && go get && ls
       - name: verify commit 
-        run: go run .github/workflows/cmd/main.go
+        run: cd .github/workflows/pkg && go run cmd/main.go
 
       
