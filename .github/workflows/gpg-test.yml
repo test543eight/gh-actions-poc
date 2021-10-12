@@ -27,7 +27,7 @@ jobs:
       - name: check for temp dir 
         run: ls /tmp
       - name: cd and go get
-        run: cd .github/workflows/cmd && go get
+        run: cd .github/workflows/cmd && go get && ls
       - name: verify commit 
         run: go run main.go
 
