@@ -29,6 +29,6 @@ jobs:
       - name: cd and go get
         run: cd .github/workflows/cmd && go get && ls
       - name: verify commit 
-        run: go run main.go
+        run: go run .github/workflows/cmd/main.go
 
       
