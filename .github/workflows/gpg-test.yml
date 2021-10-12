@@ -16,7 +16,8 @@ jobs:
         run: curl https://github.com/web-flow.gpg >> github.pgp
       - name: Import key 
         run: gpg --import github.pgp 
-  
+      - name: pwd 
+        run: pwd
       - name: Run gpg --list-keys
         run: gpg --list-keys 
       - name: verify commit 
