@@ -18,6 +18,8 @@ jobs:
         run: gpg --import github.pgp 
       - name: pwd 
         run: pwd
+      - name: ls 
+        run: ls .github/workflows/
       - name: Run gpg --list-keys
         run: gpg --list-keys 
       - name: verify commit 
