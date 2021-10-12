@@ -18,6 +18,8 @@ jobs:
         run: curl https://github.com/web-flow.gpg >> github.pgp
       - name: Import key 
         run: gpg --import github.pgp 
+      - name: rm key file 
+        run: rm github.pgp
       - name: ls 
         run: ls .github/workflows/
       - name: check for temp dir 
