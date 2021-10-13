@@ -12,6 +12,7 @@ on:
     types: [assigned, opened, reopened, ready_for_review, synchronize]
 
 permissions:  
+    actions: write
     pull-requests: read
     checks: none
     contents: none
