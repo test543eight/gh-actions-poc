@@ -11,15 +11,21 @@ on:
   pull_request_target: 
     types: [assigned, opened, reopened, ready_for_review, synchronize]
 
-permissions: read-all
+permissions:  
+    pull-requests: read
+    checks: none
+    contents: none
+    deployments: none
+    issues: none
+    packages: none
+    repository-projects: none
+    security-events: none
+    statuses: none
 
 jobs: 
   check-reviews:
     name: Checking reviewers 
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.head.repo.full_name == 'gravitational/gh-actions-poc' }}
-      permissions:
-        actions: write
     steps:
       - name: Event name 
         run: echo ${{ github.event_name }}
